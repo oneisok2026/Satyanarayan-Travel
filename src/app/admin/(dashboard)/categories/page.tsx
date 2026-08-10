@@ -27,7 +27,7 @@ export default async function AdminCategorysPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage('/admin/categories');
+  const admin = await requireAdminPage('/admin/categories');
 
   const raw = await searchParams;
   const parsed = querySchema.safeParse(raw);
@@ -87,6 +87,9 @@ export default async function AdminCategorysPage({
         page={query.page}
         totalPages={Math.ceil(total / query.limit)}
         basePath="/admin/categories"
+        resource="categories"
+        canManage={admin.role === 'super_admin'}
+        editBasePath="/admin/categories"
         params={{ search: query.search, status: query.status }}
         emptyTitle="No categorys found"
         emptyDescription="Nothing matches these filters. Clear them to see everything."

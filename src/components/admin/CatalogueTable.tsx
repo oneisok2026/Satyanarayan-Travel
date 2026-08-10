@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { DataTable, type Column } from '@/components/ui/DataTable';
-import { StatusBadge } from '@/components/ui/Badge';
+import { CatalogueRowActions } from './CatalogueRowActions';
 import { Pagination } from '@/components/ui/Pagination';
 import { formatDate } from '@/lib/utils';
 import type { ContentStatus } from '@/constants';
@@ -28,6 +28,12 @@ interface CatalogueTableProps {
   emptyDescription: string;
   /** Extra query params to preserve across pagination. */
   params?: Record<string, string | undefined>;
+  /** Resource segment for the admin API, e.g. "packages". */
+  resource: string;
+  /** True for super admins, who may edit content and delete. */
+  canManage: boolean;
+  /** Set when the resource has an edit form. */
+  editBasePath?: string;
 }
 
 /**
@@ -44,6 +50,9 @@ export function CatalogueTable({
   emptyTitle,
   emptyDescription,
   params = {},
+  resource,
+  canManage,
+  editBasePath,
 }: CatalogueTableProps) {
   const columns: Column<CatalogueRow>[] = [
     {
@@ -89,14 +98,9 @@ export function CatalogueTable({
       render: (row) => formatDate(row.updatedAt),
     },
     {
-      key: 'status',
-      header: 'Status',
-      render: (row) => <StatusBadge.Content status={row.status} />,
-    },
-    {
-      key: 'actions',
+      key: 'preview',
       header: 'View',
-      align: 'right',
+      secondary: true,
       render: (row) =>
         row.publicHref ? (
           <Link
@@ -110,6 +114,21 @@ export function CatalogueTable({
         ) : (
           <span className="text-xs text-sand-400">—</span>
         ),
+    },
+    {
+      key: 'actions',
+      header: 'Status & actions',
+      align: 'right',
+      render: (row) => (
+        <CatalogueRowActions
+          resource={resource}
+          id={row.id}
+          title={row.title}
+          status={row.status}
+          canManage={canManage}
+          editHref={editBasePath ? `${editBasePath}/${row.id}` : undefined}
+        />
+      ),
     },
   ];
 

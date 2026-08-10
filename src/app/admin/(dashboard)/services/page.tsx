@@ -27,7 +27,7 @@ export default async function AdminServicesPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage('/admin/services');
+  const admin = await requireAdminPage('/admin/services');
 
   const raw = await searchParams;
   const parsed = querySchema.safeParse(raw);
@@ -91,6 +91,9 @@ export default async function AdminServicesPage({
         page={query.page}
         totalPages={Math.ceil(total / query.limit)}
         basePath="/admin/services"
+        resource="services"
+        canManage={admin.role === 'super_admin'}
+        editBasePath="/admin/services"
         params={{ search: query.search, status: query.status }}
         emptyTitle="No services found"
         emptyDescription="Nothing matches these filters. Clear them to see everything."

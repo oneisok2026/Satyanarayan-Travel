@@ -29,7 +29,7 @@ export default async function AdminPackagesPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage('/admin/packages');
+  const admin = await requireAdminPage('/admin/packages');
 
   const raw = await searchParams;
   const parsed = querySchema.safeParse(raw);
@@ -102,6 +102,9 @@ export default async function AdminPackagesPage({
         page={query.page}
         totalPages={Math.ceil(total / query.limit)}
         basePath="/admin/packages"
+        resource="packages"
+        canManage={admin.role === 'super_admin'}
+        editBasePath="/admin/packages"
         params={{ search: query.search, status: query.status, type: query.type }}
         emptyTitle="No packages found"
         emptyDescription="Nothing matches these filters. Clear them to see the full catalogue."
