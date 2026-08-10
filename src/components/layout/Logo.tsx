@@ -13,8 +13,8 @@ interface LogoProps {
 }
 
 const MARK_SIZES = {
-  sm: 'size-14',
-  md: 'size-18 lg:size-20',
+  sm: 'size-16',
+  md: 'size-22 lg:size-26',
 } as const;
 
 /**
@@ -34,16 +34,23 @@ export function Logo({
     <Link
       href="/"
       aria-label={`${clientEnv.NEXT_PUBLIC_SITE_NAME} — home`}
-      className={cn('flex shrink-0 flex-col items-center gap-1', className)}
+      className={cn('flex shrink-0 flex-col items-center', className)}
     >
-      <span className={cn('shrink-0 overflow-hidden rounded-xl', MARK_SIZES[size])}>
+      {/*
+        Negative bottom margin pulls the wordmark up into the transparent
+        padding baked into the source PNG, closing the visual gap without
+        cropping the artwork.
+      */}
+      <span
+        className={cn('-mb-2 shrink-0 overflow-hidden lg:-mb-2.5', MARK_SIZES[size])}
+      >
         <Image
           src="/logo.png"
           alt=""
-          // Requested at 2x the 80px desktop render, so the emitted 200/384px
-          // srcset covers retina without pulling the 1254px source.
-          width={200}
-          height={200}
+          // Requested at ~2x the 104px desktop render, so the emitted srcset
+          // covers retina without pulling the 1254px source.
+          width={256}
+          height={256}
           // Above the fold in the header on every page.
           priority
           className="size-full object-contain"
