@@ -49,7 +49,44 @@ export function labelFor(resource: CatalogueResource): string {
   return CATALOGUE_RESOURCES[resource].label;
 }
 
-/** Fetches one record for editing, including unpublished ones. */
+/**
+ * Converts a lean document into plain JSON values.
+ *
+ * `.lean()` still returns ObjectId and Date instances, which cannot cross
+ * into a Client Component — React refuses anything carrying a toJSON method.
+ * This walks the document once and replaces them with strings.
+ */
+export function serializeDocument(value: unknown, depth = 0): unknown {
+  if (value == null || depth > 12) return value;
+
+  if (value instanceof Date) return value.toISOString();
+
+  // ObjectId and Buffer both report as objects; both serialize to a string.
+  if (typeof value === 'object' && 'toHexString' in value) {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => serializeDocument(entry, depth + 1));
+  }
+
+  if (typeof value === 'object') {
+    const output: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+      output[key] = serializeDocument(entry, depth + 1);
+    }
+    return output;
+  }
+
+  return value;
+}
+
+/**
+ * Fetches one record for editing, including unpublished ones.
+ *
+ * Returned as plain JSON so the result can be handed straight to the edit
+ * form, which is a Client Component.
+ */
 export async function getCatalogueItem(
   resource: CatalogueResource,
   id: string,
@@ -61,7 +98,8 @@ export async function getCatalogueItem(
     .lean<Record<string, unknown>>();
 
   if (!document) throw notFound(labelFor(resource));
-  return document;
+
+  return serializeDocument(document) as Record<string, unknown>;
 }
 
 /** Rejects a slug already used by a different record. */
@@ -92,7 +130,7 @@ export async function createCatalogueItem(
   }
 
   const created = await modelFor(resource).create(data);
-  return created.toObject() as Record<string, unknown>;
+  return serializeDocument(created.toObject()) as Record<string, unknown>;
 }
 
 export async function updateCatalogueItem(
@@ -121,7 +159,10 @@ export async function updateCatalogueItem(
 
   if (!after) throw notFound(labelFor(resource));
 
-  return { before, after };
+  return {
+    before: serializeDocument(before) as Record<string, unknown>,
+    after: serializeDocument(after) as Record<string, unknown>,
+  };
 }
 
 /**

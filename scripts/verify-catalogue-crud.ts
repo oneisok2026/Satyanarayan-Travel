@@ -78,7 +78,6 @@ async function main(): Promise<void> {
   const stamp = Date.now();
   const uids: string[] = [];
   let createdId: string | null = null;
-  let seededPackageId: string | null = null;
 
   try {
     // --- fixtures ---------------------------------------------------------
@@ -197,7 +196,6 @@ async function main(): Promise<void> {
       .lean();
 
     if (seeded?.destinationIds?.[0]) {
-      seededPackageId = String(seeded._id);
       const destinationId = String(seeded.destinationIds[0]);
       const guarded = await api(
         'DELETE',
