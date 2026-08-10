@@ -6,6 +6,7 @@ import { paginationSchema, searchParamsToObject } from '@/lib/validation/common.
 import { createBooking, listUserBookings } from '@/services/booking.service';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
 import { requireUser } from '@/lib/firebase/auth';
+import { notifyBookingCreated } from '@/services/notification.service';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,17 @@ export const POST = route('POST /api/bookings', async (request: NextRequest) => 
     notes: input.notes,
     idempotencyKey: input.idempotencyKey,
   });
+
+  // The booking is already committed; delivery failure must not fail the call.
+  await notifyBookingCreated({
+    bookingReference: booking.bookingReference,
+    customerName: booking.contact.name,
+    customerEmail: booking.contact.email,
+    packageTitle: booking.packageRef.title,
+    travelDate: new Date(booking.travelDate).toLocaleDateString('en-IN'),
+    travellers: booking.travellers.length,
+    total: `INR ${booking.pricingSnapshot.total.toLocaleString('en-IN')}`,
+  }).catch(() => undefined);
 
   return apiSuccess(
     { booking },
