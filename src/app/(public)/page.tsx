@@ -218,7 +218,7 @@ export default async function HomePage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'TravelAgency',
-            name: 'Satyanarayan Travel',
+            name: 'Satyanarayan Tour & Travel PVT. LTD.',
             description:
               'Domestic and international tour packages, hotel booking, car rental and ticketing.',
             areaServed: 'IN',

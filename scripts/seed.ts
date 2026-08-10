@@ -756,7 +756,7 @@ async function main(): Promise<void> {
       {
         $set: {
           ...post,
-          authorName: 'Satyanarayan Travel',
+          authorName: 'Satyanarayan Tour & Travel PVT. LTD.',
           status: 'published',
           publishedAt: new Date(publishedFrom + index * 7 * 86_400_000),
           seo: { title: post.title, description: post.excerpt },
@@ -804,7 +804,7 @@ async function main(): Promise<void> {
 
   // ------------------------------------------------------------- settings --
   const settings = [
-    { key: 'company.name', value: 'Satyanarayan Travel', group: 'company', isPublic: true },
+    { key: 'company.name', value: 'Satyanarayan Tour & Travel PVT. LTD.', group: 'company', isPublic: true },
     { key: 'company.tagline', value: 'Journeys planned by people who have made them', group: 'company', isPublic: true },
     { key: 'company.foundedYear', value: 2009, group: 'company', isPublic: true },
     { key: 'stats.travellers', value: 12000, group: 'stats', isPublic: true },

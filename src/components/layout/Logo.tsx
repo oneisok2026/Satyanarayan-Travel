@@ -57,7 +57,9 @@ export function Logo({
         >
           <span
             className={cn(
-              'font-display text-sm font-semibold tracking-tight whitespace-nowrap sm:text-base',
+              // Held on one line: the full legal name is long, and wrapping it
+              // mid-phrase reads worse than a slightly smaller wordmark.
+              'font-display text-[0.8125rem] font-semibold tracking-tight whitespace-nowrap sm:text-sm lg:text-[0.9375rem]',
               invert ? 'text-white' : 'text-brand-900',
             )}
           >
