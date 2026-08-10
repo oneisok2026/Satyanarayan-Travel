@@ -1,36 +1,26 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CONTACT } from '@/constants/navigation';
 
 /**
  * Floating WhatsApp button.
  *
- * Appears after a short scroll so it does not cover hero content on first
- * paint. On mobile it sits above the safe-area inset so it clears the iOS
- * home indicator.
+ * Always visible, on every page and at every scroll position — it is the
+ * primary contact affordance on mobile.
+ *
+ * Deliberately a Server Component: with no scroll tracking there is no
+ * client state, so this ships zero JavaScript.
  */
 export function FloatingActions() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 400);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
     <div
       className={cn(
-        'no-print fixed right-4 bottom-4 z-30 flex flex-col gap-3',
-        'pb-[env(safe-area-inset-bottom)] sm:right-6 sm:bottom-6',
-        'transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-        'motion-reduce:transition-none',
-        visible
-          ? 'translate-y-0 opacity-100'
-          : 'pointer-events-none translate-y-3 opacity-0',
+        'no-print fixed right-4 z-30 flex flex-col gap-3',
+        // Sits above the mobile sticky booking bar on package pages, which
+        // spans the full width at bottom-0. Drops back down from lg, where
+        // that bar is hidden.
+        'bottom-24 lg:bottom-6 lg:right-6',
+        // Clears the iOS home indicator.
+        'pb-[env(safe-area-inset-bottom)]',
       )}
     >
       <a
