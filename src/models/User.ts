@@ -1,4 +1,11 @@
-import { Schema, model, models, type Model, type Types } from 'mongoose';
+import {
+  Schema,
+  model,
+  models,
+  type HydratedDocument,
+  type Model,
+  type Types,
+} from 'mongoose';
 import { USER_ROLES, USER_STATUSES, type UserRole, type UserStatus } from '@/constants';
 
 /**
@@ -11,7 +18,8 @@ import { USER_ROLES, USER_STATUSES, type UserRole, type UserStatus } from '@/con
  * must not store passwords or password hashes").
  */
 
-export interface UserDocument {
+/** Plain shape of the stored record, without Mongoose document methods. */
+export interface UserAttributes {
   _id: Types.ObjectId;
   firebaseUid: string;
   email: string;
@@ -39,7 +47,7 @@ export interface UserDocument {
   updatedAt: Date;
 }
 
-const userSchema = new Schema<UserDocument>(
+const userSchema = new Schema<UserAttributes>(
   {
     firebaseUid: {
       type: String,
@@ -121,5 +129,8 @@ userSchema.index({ email: 1 });
 userSchema.index({ role: 1, status: 1 });
 userSchema.index({ createdAt: -1 });
 
-export const User: Model<UserDocument> =
-  (models.User as Model<UserDocument>) ?? model<UserDocument>('User', userSchema);
+/** Hydrated document — what queries return, with .save(), .toJSON() etc. */
+export type UserDocument = HydratedDocument<UserAttributes>;
+
+export const User: Model<UserAttributes> =
+  (models.User as Model<UserAttributes>) ?? model<UserAttributes>('User', userSchema);

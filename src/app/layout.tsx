@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Fraunces } from 'next/font/google';
 import { clientEnv } from '@/lib/env';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import { getCurrentUser } from '@/lib/firebase/auth';
+import { toSessionUser } from '@/services/user.service';
 import './globals.css';
 
 /**
@@ -85,14 +88,20 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Resolved server-side from the session cookie so the first paint already
+  // knows who is signed in — no auth flicker, and no reliance on localStorage.
+  const user = await getCurrentUser().catch(() => null);
+
   return (
     <html lang="en-IN" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="min-h-dvh antialiased">
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        {children}
+        <AuthProvider initialUser={user ? toSessionUser(user) : null}>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
