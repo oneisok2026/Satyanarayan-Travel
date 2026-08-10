@@ -12,9 +12,13 @@ interface LogoProps {
   className?: string;
 }
 
+/**
+ * Layout box for the mark. The artwork renders larger than this via scale,
+ * so these values are what the lockup actually occupies in the header row.
+ */
 const MARK_SIZES = {
-  sm: 'size-16',
-  md: 'size-22 lg:size-26',
+  sm: 'size-11',
+  md: 'size-12 lg:size-14',
 } as const;
 
 /**
@@ -34,26 +38,25 @@ export function Logo({
     <Link
       href="/"
       aria-label={`${clientEnv.NEXT_PUBLIC_SITE_NAME} — home`}
-      className={cn('flex shrink-0 flex-col items-center', className)}
+      className={cn('flex shrink-0 flex-col items-center gap-0.5', className)}
     >
       {/*
-        Negative bottom margin pulls the wordmark up into the transparent
-        padding baked into the source PNG, closing the visual gap without
-        cropping the artwork.
+        The mark's layout box is deliberately shorter than the artwork:
+        `scale` grows the image visually without adding height to the lockup,
+        so the wordmark below stays inside the header row instead of being
+        clipped by its bottom edge.
       */}
-      <span
-        className={cn('-mb-2 shrink-0 overflow-hidden lg:-mb-2.5', MARK_SIZES[size])}
-      >
+      <span className={cn('relative shrink-0', MARK_SIZES[size])}>
         <Image
           src="/logo.png"
           alt=""
-          // Requested at ~2x the 104px desktop render, so the emitted srcset
-          // covers retina without pulling the 1254px source.
+          // Requested at ~2x the scaled render, so the srcset covers retina
+          // without pulling the 1254px source.
           width={256}
           height={256}
           // Above the fold in the header on every page.
           priority
-          className="size-full object-contain"
+          className="absolute inset-0 size-full scale-135 object-contain"
         />
       </span>
 

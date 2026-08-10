@@ -65,11 +65,6 @@ export function Header() {
         )}
       >
         {/* Taller than a single-line header: the logo stacks mark over wordmark. */}
-        {/*
-          The logo mark is taller than this row and overflows it deliberately —
-          the source PNG carries transparent padding, so the visible artwork
-          still sits inside the header.
-        */}
         <div className="container-page flex h-20 items-center justify-between gap-4 lg:h-24">
           <Logo />
 
