@@ -136,7 +136,18 @@ async function main(): Promise<void> {
       'Signed out: /admin leaks no admin data',
       !anonAdmin.includes('Signed in as') &&
         !anonAdmin.includes('Recent activity') &&
-        !anonAdmin.includes('admin/packages'),
+        !anonAdmin.includes('Confirmed revenue'),
+    );
+    record(
+      'Signed out: /admin redirects to the admin sign-in',
+      anonAdmin.includes('/admin/login'),
+    );
+
+    const adminLogin = await body('/admin/login');
+    record(
+      'Admin sign-in page renders a form',
+      adminLogin.includes('Admin sign in') &&
+        adminLogin.includes('current-password'),
     );
 
     // --- customer ---------------------------------------------------------
@@ -175,7 +186,7 @@ async function main(): Promise<void> {
       'Customer sees 404 on /admin, no admin data',
       !customerAdmin.includes('Signed in as') &&
         !customerAdmin.includes('Recent activity') &&
-        !customerAdmin.includes('admin/packages'),
+        !customerAdmin.includes('Confirmed revenue'),
     );
 
     const customerAdminApi = await fetch(`${BASE}/api/admin/dashboard`, {

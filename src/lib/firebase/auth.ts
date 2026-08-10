@@ -87,13 +87,20 @@ export async function requireUserPage(returnTo: string): Promise<UserDocument> {
  *  should not confirm its own existence to a signed-in customer. */
 export async function requireAdminPage(returnTo: string): Promise<UserDocument> {
   const user = await getCurrentUser();
+
+  // Signed out: send them to the admin sign-in rather than a 404, so staff
+  // hitting /admin directly get a usable entry point.
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(returnTo)}`);
+    redirect(`/admin/login?next=${encodeURIComponent(returnTo)}`);
   }
+
+  // Signed in without an admin role: 404 rather than 403, so the admin
+  // surface does not confirm its own existence to a customer probing URLs.
   if (!ADMIN_ROLES.includes(user.role)) {
     const { notFound: nextNotFound } = await import('next/navigation');
     nextNotFound();
   }
+
   return user;
 }
 
