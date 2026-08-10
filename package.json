@@ -22,6 +22,7 @@
     "verify:routes": "tsx --conditions react-server scripts/smoke-auth-routes.ts",
     "create:admin": "tsx --conditions react-server scripts/create-admin.ts",
     "verify:crud": "tsx --conditions react-server scripts/verify-catalogue-crud.ts",
+    "verify:deploy": "tsx --conditions react-server scripts/verify-deployment.ts",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
