@@ -119,7 +119,73 @@ export async function resolveAuthenticatedUser(
     throw accountSuspended('This account is no longer active.');
   }
 
+  // MongoDB is authoritative; a disagreeing claim is repaired, never trusted.
+  await reconcileRoleClaim(decoded, user);
+
   return user;
+}
+
+/**
+ * Reconciles the Firebase `role` custom claim against MongoDB (PART 4).
+ *
+ * The claim is a client-side hint only — no authorization decision reads it.
+ * When the two disagree the claim is rewritten to match MongoDB, so a stale
+ * or tampered claim can never grant privilege. A claim that is *higher* than
+ * the database role is treated as a security event and audited.
+ */
+async function reconcileRoleClaim(
+  decoded: DecodedIdToken,
+  user: UserDocument,
+): Promise<void> {
+  const claimedRole = typeof decoded.role === 'string' ? decoded.role : undefined;
+  if (claimedRole === user.role) return;
+
+  const claimRank = roleRank(claimedRole);
+  const actualRank = roleRank(user.role);
+
+  if (claimRank > actualRank) {
+    // The token asserts more privilege than the database grants. The request
+    // is already safe (role is read from MongoDB), but this is worth a trail.
+    logger.warn('Firebase claim asserted higher privilege than MongoDB role', {
+      firebaseUid: user.firebaseUid,
+      claimedRole,
+      actualRole: user.role,
+    });
+
+    const { recordAudit } = await import('./audit.service');
+    await recordAudit({
+      actor: { _id: user._id, email: user.email, role: user.role },
+      action: 'user.claim_mismatch',
+      entityType: 'User',
+      entityId: String(user._id),
+      changes: { role: { from: claimedRole ?? null, to: user.role } },
+      metadata: { resolution: 'claim rewritten to match MongoDB' },
+    });
+  }
+
+  try {
+    await setRoleClaim(user.firebaseUid, user.role);
+    logger.info('Role claim reconciled to MongoDB', {
+      firebaseUid: user.firebaseUid,
+      role: user.role,
+    });
+  } catch (error) {
+    // Non-fatal: authorization does not depend on the claim being correct.
+    logger.error('Failed to reconcile role claim', {
+      firebaseUid: user.firebaseUid,
+      error: error instanceof Error ? error : String(error),
+    });
+  }
+}
+
+const ROLE_RANK: Record<string, number> = {
+  customer: 0,
+  admin: 1,
+  super_admin: 2,
+};
+
+function roleRank(role: string | undefined): number {
+  return role ? (ROLE_RANK[role] ?? -1) : -1;
 }
 
 export async function findUserByFirebaseUid(

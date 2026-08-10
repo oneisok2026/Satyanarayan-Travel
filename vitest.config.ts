@@ -14,6 +14,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // `server-only` throws when resolved outside a Server Component, which
+      // is exactly what Vitest looks like. Stubbing it lets server modules be
+      // unit-tested; the real guard still applies to the Next.js build.
+      'server-only': fileURLToPath(new URL('./tests/stubs/server-only.ts', import.meta.url)),
     },
   },
 });
