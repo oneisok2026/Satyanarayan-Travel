@@ -1,0 +1,653 @@
+Travel Agency Website --- System Architecture
+
+1. Final Architecture
+
+                         USER BROWSER
+                              |
+                    +---------+---------+
+                    |                   |
+             Next.js Frontend      Firebase Client SDK
+                    |                   |
+                    |                   v
+                    |            Firebase Auth
+                    |                   |
+                    |             Firebase UID
+                    |                   |
+                    +---------+---------+
+                              |
+                              v
+                    NEXT.JS APPLICATION
+                    Node.js 24 LTS
+                              |
+              +---------------+---------------+
+              |                               |
+        Route Handlers                  Server Components
+              |                               |
+              v                               v
+       Auth Middleware                 Public Rendering
+              |
+       Firebase Admin SDK
+              |
+      Verify Session / Token
+              |
+              v
+      MongoDB User Lookup
+              |
+              v
+        Role / Permission
+              |
+              v
+       Application Services
+              |
+              v
+          Mongoose
+              |
+              v
+         MongoDB Atlas
+
+2. Critical Principle
+
+Firebase is the identity provider.
+
+MongoDB is the application database.
+
+Do not mix these responsibilities.
+
+Firebase:
+
+Authentication.
+
+Identity.
+
+UID.
+
+Email verification.
+
+Password reset.
+
+Authentication providers.
+
+Session/token identity.
+
+MongoDB:
+
+Customer profile.
+
+Application roles.
+
+Destinations.
+
+Packages.
+
+Enquiries.
+
+Bookings.
+
+Favourites.
+
+Reviews.
+
+Blogs.
+
+Gallery.
+
+Services.
+
+Site settings.
+
+Audit data.
+
+3. Authentication Architecture
+
+Client
+
+Use Firebase Web SDK.
+
+signIn
+   ↓
+Firebase Auth
+   ↓
+Firebase User
+   ↓
+ID Token
+
+For server session:
+
+ID Token
+   ↓
+POST /api/auth/session
+   ↓
+Firebase Admin verifyIdToken()
+   ↓
+createSessionCookie()
+   ↓
+Set-Cookie
+
+Firebase officially supports this server-side session-cookie pattern.citeturn0search3
+
+Cookie requirements:
+
+HttpOnly.
+
+Secure in production.
+
+SameSite appropriate for deployment.
+
+Limited lifetime.
+
+Clear on logout.
+
+Revoke when necessary.
+
+4. Authentication Verification
+
+For protected requests:
+
+Request
+  ↓
+Read session cookie
+  ↓
+Firebase Admin verifySessionCookie()
+  ↓
+Firebase UID
+  ↓
+MongoDB User.findOne({ firebaseUid })
+  ↓
+Check status
+  ↓
+Check role
+  ↓
+Authorize
+
+Firebase also supports direct server-side ID-token verification throughthe Admin SDK. citeturn0search1
+
+Never trust:
+
+req.body.userId
+req.body.role
+clientRole
+localStorageRole
+
+5. User Model
+
+User
+├── firebaseUid (unique)
+├── email
+├── name
+├── phone
+├── photoURL
+├── role
+├── status
+├── profile
+├── preferences
+├── createdAt
+└── updatedAt
+
+Unique index:
+
+firebaseUid
+
+Optional unique email index should be handled carefully because Firebaseidentity is the authoritative authentication identity.
+
+6. Role Architecture
+
+Roles:
+
+customer
+admin
+super_admin
+
+Use Firebase custom claims only for authorization hints/claims.
+
+Do not store: - profile; - preferences; - booking data; - packagepermissions; - large application objects
+
+inside Firebase custom claims.
+
+Firebase recommends using custom claims for access control and storingother data separately. citeturn0search0
+
+MongoDB remains the application-level source for role/permissions.
+
+For highly sensitive operations, resolve the MongoDB user on the server.
+
+7. Application Structure
+
+src/
+├── app/
+│   ├── (public)/
+│   ├── (auth)/
+│   ├── account/
+│   ├── admin/
+│   └── api/
+│
+├── components/
+│   ├── ui/
+│   ├── layout/
+│   ├── tours/
+│   ├── destinations/
+│   ├── booking/
+│   ├── enquiry/
+│   ├── blog/
+│   └── gallery/
+│
+├── lib/
+│   ├── firebase/
+│   │   ├── client.ts
+│   │   ├── admin.ts
+│   │   ├── auth.ts
+│   │   └── session.ts
+│   ├── db/
+│   ├── validation/
+│   ├── security/
+│   ├── email/
+│   ├── storage/
+│   └── seo/
+│
+├── models/
+├── services/
+├── types/
+├── hooks/
+└── constants/
+
+8. Firebase Files
+
+Recommended:
+
+lib/firebase/client.ts
+
+Contains browser Firebase initialization.
+
+lib/firebase/admin.ts
+
+Contains Firebase Admin SDK initialization.
+
+Never import the Admin SDK into client components.
+
+lib/firebase/session.ts
+
+Contains: - create session. - verify session. - clear session.
+
+lib/firebase/auth.ts
+
+Contains server authentication helpers.
+
+9. MongoDB Models
+
+Required:
+
+User
+Destination
+Category
+TourPackage
+Enquiry
+Booking
+Favourite
+Review
+BlogPost
+GalleryItem
+Service
+SiteSetting
+AuditLog
+
+10. Package Model
+
+TourPackage
+├── title
+├── slug
+├── type
+├── destinationIds
+├── categoryId
+├── shortDescription
+├── description
+├── duration
+├── journeyDates
+├── price
+├── priceNote
+├── itinerary[]
+├── inclusions[]
+├── exclusions[]
+├── hotels[]
+├── transportation
+├── coverImage
+├── gallery[]
+├── brochure
+├── featured
+├── status
+├── seo
+├── createdAt
+└── updatedAt
+
+11. Enquiry Model
+
+Enquiry
+├── userId?
+├── packageId?
+├── serviceId?
+├── name
+├── email
+├── phone
+├── travelDate
+├── travellers
+├── budget
+├── message
+├── status
+├── internalNotes
+├── source
+├── createdAt
+└── updatedAt
+
+12. Booking Model
+
+Booking
+├── bookingReference
+├── userId
+├── packageId
+├── travelDate
+├── travellers[]
+├── pricingSnapshot
+├── status
+├── paymentStatus
+├── notes
+├── createdAt
+└── updatedAt
+
+Indexes:
+
+bookingReference unique
+userId + createdAt
+status + createdAt
+packageId + createdAt
+
+13. API Architecture
+
+Example:
+
+/api/auth/session
+/api/auth/logout
+/api/users/me
+/api/packages
+/api/packages/[slug]
+/api/destinations
+/api/destinations/[slug]
+/api/enquiries
+/api/bookings
+/api/favourites
+/api/reviews
+/api/blogs
+/api/gallery
+/api/services
+/api/admin/packages
+/api/admin/enquiries
+/api/admin/bookings
+
+Public GET endpoints can be cacheable.
+
+Private endpoints must not expose another user's data.
+
+14. API Request Pipeline
+
+Request
+  ↓
+Route Handler
+  ↓
+Authentication if required
+  ↓
+Authorization if required
+  ↓
+Validation
+  ↓
+Service
+  ↓
+Mongoose
+  ↓
+Response
+
+Do not put large business logic directly inside Route Handlers.
+
+15. Response Format
+
+Success:
+
+{
+  "success": true,
+  "data": {},
+  "message": "Success"
+}
+
+Error:
+
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request",
+    "fields": {}
+  }
+}
+
+16. Data Ownership
+
+Firebase
+└── Authentication identity
+
+MongoDB
+├── Application user
+├── Packages
+├── Destinations
+├── Bookings
+├── Enquiries
+├── Content
+└── Business data
+
+17. Authorization
+
+Never:
+
+if (isAdminFromClient)
+
+Always:
+
+verifyFirebaseSession()
+        ↓
+getFirebaseUid()
+        ↓
+findMongoUser()
+        ↓
+checkRole()
+        ↓
+execute()
+
+18. Public Content Caching
+
+Can cache:
+
+Published packages.
+
+Published destinations.
+
+Published blogs.
+
+Public services.
+
+Public pages.
+
+Do not cache:
+
+Customer profile.
+
+Bookings.
+
+Enquiries.
+
+Admin pages.
+
+Sensitive account data.
+
+19. Image Architecture
+
+Use Next/Image.
+
+Rules:
+
+Hero image prioritized.
+
+Below-fold lazy loading.
+
+Correct sizes.
+
+Aspect ratio.
+
+Optimized formats.
+
+Upload validation.
+
+Maximum file size.
+
+Avoid unnecessary original-size delivery.
+
+Storage implementation should be abstracted so an externalobject-storage provider can be introduced later without rewriting thedomain layer.
+
+20. Security Architecture
+
+Layers:
+
+Firebase Authentication
+        ↓
+Session Verification
+        ↓
+MongoDB User
+        ↓
+Role Authorization
+        ↓
+Input Validation
+        ↓
+Rate Limiting
+        ↓
+Business Logic
+        ↓
+Database
+
+21. Deployment
+
+Domain
+   ↓
+Hostinger Cloud
+   ↓
+Next.js + Node.js 24
+   |
+   +---- Firebase Authentication
+   |
+   +---- MongoDB Atlas
+   |
+   +---- Email Provider
+   |
+   +---- Optional Payment Provider
+   |
+   +---- Optional Media Storage
+
+Production secrets must exist only in server environment variables.
+
+22. Required Environment Variables
+
+Client-safe:
+
+NEXT_PUBLIC_FIREBASE_API_KEY
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+NEXT_PUBLIC_FIREBASE_PROJECT_ID
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+NEXT_PUBLIC_FIREBASE_APP_ID
+
+Server-only:
+
+MONGODB_URI
+FIREBASE_PROJECT_ID
+FIREBASE_CLIENT_EMAIL
+FIREBASE_PRIVATE_KEY
+SESSION_COOKIE_NAME
+SESSION_COOKIE_SECRET_IF_REQUIRED
+EMAIL_PROVIDER_SECRET
+PAYMENT_SECRET_IF_ENABLED
+
+Never expose server-only variables using NEXT_PUBLIC_.
+
+23. End-to-End Request Example
+
+Customer Enquiry
+
+Customer
+ ↓
+Firebase authenticated
+ ↓
+Package page
+ ↓
+Enquiry form
+ ↓
+POST /api/enquiries
+ ↓
+Verify session
+ ↓
+Resolve Firebase UID
+ ↓
+Find MongoDB User
+ ↓
+Validate input
+ ↓
+Rate-limit check
+ ↓
+Create MongoDB Enquiry
+ ↓
+Send notification
+ ↓
+Return success
+ ↓
+Customer dashboard updated
+
+24. End-to-End Booking
+
+Customer
+ ↓
+Package
+ ↓
+Book Now
+ ↓
+POST /api/bookings
+ ↓
+Verify Firebase session
+ ↓
+Resolve MongoDB user
+ ↓
+Load package from DB
+ ↓
+Validate availability/business rules
+ ↓
+Calculate authoritative price
+ ↓
+Create booking
+ ↓
+Optional payment
+ ↓
+Server verifies payment
+ ↓
+Update booking
+ ↓
+Admin sees booking
+ ↓
+Customer sees booking
+
+25. Reliability Rules
+
+Use transactions where multiple MongoDB writes must remainconsistent.
+
+Make payment callbacks idempotent.
+
+Make notification failures non-destructive to successful databasemutations.
+
+Retry safe external operations.
+
+Never duplicate bookings because a client retries a request.
+
+Use unique booking references.
+
+Use unique favourite constraints.
+
+Validate all uploaded files.
