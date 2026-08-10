@@ -51,6 +51,11 @@ export const metadata: Metadata = {
   publisher: siteName,
   formatDetection: { telephone: true, address: false, email: false },
   alternates: { canonical: '/' },
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_IN',

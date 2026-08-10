@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MAIN_NAV, CONTACT } from '@/constants/navigation';
-import { clientEnv } from '@/lib/env';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { MobileMenu } from './MobileMenu';
+import { Logo } from './Logo';
 import { ADMIN_ROLES } from '@/constants';
 
 /**
@@ -64,23 +64,9 @@ export function Header() {
             : 'bg-white lg:bg-white/80 lg:backdrop-blur-sm',
         )}
       >
-        <div className="container-page flex h-16 items-center justify-between gap-4 lg:h-20">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="grid size-9 place-items-center rounded-xl bg-brand-700 text-white lg:size-10"
-            >
-              <CompassMark />
-            </span>
-            <span className="flex flex-col leading-none">
-              <span className="font-display text-[1.0625rem] font-semibold tracking-tight text-brand-900 lg:text-lg">
-                {clientEnv.NEXT_PUBLIC_SITE_NAME}
-              </span>
-              <span className="mt-0.5 hidden text-[0.625rem] tracking-[0.2em] text-sand-500 uppercase sm:block">
-                Tours &amp; Travels
-              </span>
-            </span>
-          </Link>
+        {/* Taller than a single-line header: the logo stacks mark over wordmark. */}
+        <div className="container-page flex h-20 items-center justify-between gap-4 lg:h-24">
+          <Logo />
 
           <nav aria-label="Main" className="hidden lg:block">
             <ul className="flex items-center gap-0.5">
@@ -209,23 +195,5 @@ export function Header() {
         userName={user?.name}
       />
     </>
-  );
-}
-
-function CompassMark() {
-  return (
-    <svg
-      className="size-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="m15.5 8.5-2.1 5-5 2.1 2.1-5z" />
-    </svg>
   );
 }

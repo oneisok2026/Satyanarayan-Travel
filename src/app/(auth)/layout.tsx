@@ -1,18 +1,13 @@
 import Link from 'next/link';
-import { clientEnv } from '@/lib/env';
+import { Logo } from '@/components/layout/Logo';
 
 /** Minimal, distraction-free shell for sign-in, registration and reset. */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main id="main-content" className="grid min-h-dvh place-items-center px-5 py-12">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <Link
-            href="/"
-            className="font-display text-xl font-semibold tracking-tight text-brand-800"
-          >
-            {clientEnv.NEXT_PUBLIC_SITE_NAME}
-          </Link>
+        <div className="mb-8 flex justify-center">
+          <Logo />
         </div>
 
         <div className="rounded-2xl bg-white p-6 shadow-[--shadow-card] ring-1 ring-sand-200/70 sm:p-8">

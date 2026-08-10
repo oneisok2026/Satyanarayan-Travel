@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { clientEnv } from '@/lib/env';
 import { FOOTER_NAV, CONTACT } from '@/constants/navigation';
+import { Logo } from './Logo';
 
 /** Server Component — static content, no client JS shipped. */
 export function Footer() {
@@ -11,28 +12,8 @@ export function Footer() {
       <div className="container-page py-14 lg:py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <Link href="/" className="flex items-center gap-2.5">
-              <span
-                aria-hidden="true"
-                className="grid size-10 place-items-center rounded-xl bg-accent-600 text-white"
-              >
-                <svg
-                  className="size-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="m15.5 8.5-2.1 5-5 2.1 2.1-5z" />
-                </svg>
-              </span>
-              <span className="font-display text-lg font-semibold text-white">
-                {clientEnv.NEXT_PUBLIC_SITE_NAME}
-              </span>
-            </Link>
+            {/* items-start keeps the stacked lockup flush with the column. */}
+            <Logo invert className="items-start" />
 
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-sand-400">
               We plan journeys across India and abroad — handpicked stays, sensible
