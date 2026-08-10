@@ -28,6 +28,29 @@ export function AdminLoginForm({
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [lockedOut, setLockedOut] = useState(false);
+
+  /**
+   * Reports a failed attempt so the server can rate limit this IP.
+   *
+   * Firebase verifies the password, so our server never sees a wrong one —
+   * without this it would have no view of guessing against this page.
+   */
+  async function reportFailure(): Promise<{ lockedOut: boolean; retryAfterSeconds: number }> {
+    try {
+      const response = await fetch('/api/auth/failed-attempt', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      const body = await response.json().catch(() => null);
+      return {
+        lockedOut: Boolean(body?.data?.lockedOut),
+        retryAfterSeconds: Number(body?.data?.retryAfterSeconds ?? 0),
+      };
+    } catch {
+      return { lockedOut: false, retryAfterSeconds: 0 };
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +64,7 @@ export function AdminLoginForm({
         // Signed in successfully, but this account has no admin role. Ending
         // the session avoids leaving them half-authenticated on a staff page.
         await signOut();
+        await reportFailure();
         setError('That account does not have admin access.');
         setSubmitting(false);
         return;
@@ -49,7 +73,20 @@ export function AdminLoginForm({
       router.replace('/admin');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign-in failed. Please try again.');
+      const { lockedOut: locked, retryAfterSeconds } = await reportFailure();
+
+      if (locked) {
+        setLockedOut(true);
+        const minutes = Math.ceil(retryAfterSeconds / 60);
+        setError(
+          `Too many failed attempts. Try again in ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}.`,
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : 'Sign-in failed. Please try again.',
+        );
+      }
+
       setSubmitting(false);
     }
   }
@@ -115,7 +152,13 @@ export function AdminLoginForm({
         placeholder="••••••••"
       />
 
-      <Button type="submit" loading={submitting} fullWidth size="lg">
+      <Button
+        type="submit"
+        loading={submitting}
+        disabled={lockedOut}
+        fullWidth
+        size="lg"
+      >
         {submitting ? 'Signing in…' : 'Sign in'}
       </Button>
 

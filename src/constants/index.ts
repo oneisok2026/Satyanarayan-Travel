@@ -84,6 +84,12 @@ export const RATE_LIMITS = {
   booking: { limit: 5, windowMs: 10 * 60 * 1000 },
   review: { limit: 3, windowMs: 60 * 60 * 1000 },
   session: { limit: 20, windowMs: 10 * 60 * 1000 },
+  /**
+   * Failed sign-in attempts per IP. Deliberately tight: /admin/login is
+   * public, so it attracts automated credential stuffing, and this is the
+   * control that holds when an account password is weak.
+   */
+  loginAttempt: { limit: 8, windowMs: 15 * 60 * 1000 },
   contact: { limit: 5, windowMs: 10 * 60 * 1000 },
   default: { limit: 60, windowMs: 60 * 1000 },
 } as const;
