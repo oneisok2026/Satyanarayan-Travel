@@ -65,7 +65,7 @@ export function Header() {
         )}
       >
         {/* Taller than a single-line header: the logo stacks mark over wordmark. */}
-        <div className="container-page flex h-20 items-center justify-between gap-4 lg:h-24">
+        <div className="container-page flex h-24 items-center justify-between gap-4 lg:h-28">
           <Logo />
 
           <nav aria-label="Main" className="hidden lg:block">

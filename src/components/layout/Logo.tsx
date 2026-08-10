@@ -13,8 +13,8 @@ interface LogoProps {
 }
 
 const MARK_SIZES = {
-  sm: 'size-12',
-  md: 'size-14 lg:size-16',
+  sm: 'size-14',
+  md: 'size-18 lg:size-20',
 } as const;
 
 /**
@@ -40,8 +40,10 @@ export function Logo({
         <Image
           src="/logo.png"
           alt=""
-          width={128}
-          height={128}
+          // Requested at 2x the 80px desktop render, so the emitted 200/384px
+          // srcset covers retina without pulling the 1254px source.
+          width={200}
+          height={200}
           // Above the fold in the header on every page.
           priority
           className="size-full object-contain"
@@ -53,7 +55,7 @@ export function Logo({
           className={cn(
             // Held on one line: the full legal name is long, and wrapping it
             // mid-phrase reads worse than a smaller wordmark.
-            'font-display text-[0.6875rem] leading-none font-semibold tracking-tight whitespace-nowrap sm:text-xs lg:text-[0.8125rem]',
+            'font-display text-[0.5625rem] leading-none font-semibold tracking-tight whitespace-nowrap sm:text-[0.625rem] lg:text-[0.6875rem]',
             invert ? 'text-white' : 'text-brand-900',
           )}
         >
