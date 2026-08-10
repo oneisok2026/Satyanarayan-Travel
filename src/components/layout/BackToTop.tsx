@@ -46,11 +46,11 @@ export function BackToTop() {
       // Hidden from AT and the tab order until it is actually usable.
       inert={!visible}
       className={cn(
-        'no-print fixed left-4 z-30 grid size-13 place-items-center rounded-2xl',
-        'bg-accent-600 text-white shadow-[--shadow-float]',
-        // Matches the WhatsApp widget so the two sit on the same baseline.
-        'bottom-24 lg:bottom-6 lg:left-6',
-        'pb-[env(safe-area-inset-bottom)]',
+        'no-print floating-action fixed left-4 z-30 grid size-13 place-items-center',
+        'rounded-2xl bg-accent-600 text-white shadow-[--shadow-float]',
+        // .floating-action owns the vertical offset and the safe-area inset,
+        // so both floating buttons stay on one baseline.
+        'lg:left-6',
         'transition-[opacity,transform,background-color] duration-300',
         'ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
         'hover:bg-accent-700 hover:-translate-y-0.5 active:translate-y-0',

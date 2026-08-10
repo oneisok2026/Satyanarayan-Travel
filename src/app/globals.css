@@ -159,6 +159,28 @@
     }
   }
 
+  /*
+   * Vertical offset for the floating action buttons.
+   *
+   * Defaults to sitting at the bottom edge. Pages that render a bottom-fixed
+   * bar (the mobile sticky booking bar on package pages) raise it by setting
+   * --floating-offset on a wrapper, so the buttons are only pushed up where
+   * something is actually in the way.
+   */
+  .floating-action {
+    bottom: calc(var(--floating-offset, 1rem) + env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 1024px) {
+    .floating-action {
+      /*
+       * The sticky booking bar is hidden from lg, so --floating-offset is
+       * ignored here and the buttons sit at a fixed desktop inset.
+       */
+      bottom: 1.5rem;
+    }
+  }
+
   /* Skip link: off-screen until focused. */
   .skip-link {
     position: absolute;

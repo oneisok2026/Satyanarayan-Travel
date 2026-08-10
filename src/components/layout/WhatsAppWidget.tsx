@@ -90,10 +90,9 @@ export function WhatsAppWidget() {
     <div
       ref={containerRef}
       className={cn(
-        'no-print fixed right-4 z-30 flex flex-col items-end gap-3',
-        // Clears the mobile sticky booking bar on package pages.
-        'bottom-24 lg:right-6 lg:bottom-6',
-        'pb-[env(safe-area-inset-bottom)]',
+        'no-print floating-action fixed right-4 z-30 flex flex-col items-end gap-3',
+        // .floating-action owns the vertical offset and the safe-area inset.
+        'lg:right-6',
       )}
       onMouseEnter={canHover ? () => { cancelClose(); setOpen(true); } : undefined}
       onMouseLeave={canHover ? scheduleClose : undefined}

@@ -26,6 +26,21 @@ export function StickyBookingBar({ packageTitle, price }: StickyBookingBarProps)
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  /*
+   * Raise the floating action buttons above this bar while it is on screen.
+   * Setting the custom property on the root lets the buttons stay at the
+   * bottom edge everywhere else, without them needing to know this bar exists.
+   */
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--floating-offset', visible ? '5.5rem' : '1rem');
+    // Braces matter: removeProperty returns a string, which is not a valid
+    // effect destructor.
+    return () => {
+      root.style.removeProperty('--floating-offset');
+    };
+  }, [visible]);
+
   const whatsappUrl = buildWhatsAppUrl(
     CONTACT.whatsapp,
     `Hello! I'm interested in the "${packageTitle}" package.`,
