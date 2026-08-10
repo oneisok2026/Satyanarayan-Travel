@@ -71,11 +71,11 @@ export function EnquiryStatusSelect({
         disabled={saving || pending}
         onChange={(event) => handleChange(event.target.value as EnquiryStatus)}
         className={cn(
-          'h-8 rounded-lg border border-sand-300 bg-white px-2 pr-7 text-xs',
+          'h-8 rounded-lg border border-sand-300 bg-white px-2 text-xs',
           'text-sand-800 transition-colors hover:border-sand-400',
           'focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 focus:outline-none',
           'disabled:opacity-60',
-          "appearance-none bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23807d78' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")] bg-[length:0.75rem] bg-[position:right_0.5rem_center] bg-no-repeat",
+          'select-chevron select-chevron-sm',
         )}
       >
         {ENQUIRY_STATUSES.map((option) => (

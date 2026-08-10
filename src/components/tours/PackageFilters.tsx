@@ -47,10 +47,10 @@ export function PackageFilters({ destinations, categories }: PackageFiltersProps
   ).length;
 
   const selectClass = cn(
-    'h-10 rounded-lg border border-sand-300 bg-white px-3 pr-9 text-sm text-sand-800',
+    'h-10 rounded-lg border border-sand-300 bg-white px-3 text-sm text-sand-800',
     'transition-colors hover:border-sand-400',
     'focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 focus:outline-none',
-    "appearance-none bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23807d78' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")] bg-[length:0.9rem] bg-[position:right_0.7rem_center] bg-no-repeat",
+    'select-chevron',
   );
 
   return (

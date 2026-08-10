@@ -181,6 +181,37 @@
     }
   }
 
+  /*
+   * Dropdown chevron for native selects.
+   *
+   * One utility rather than an inline data-URI per call site: the escaped
+   * SVG is easy to break when copied, and Tailwind's arbitrary-value parser
+   * silently drops a malformed one, leaving a select with no visible affordance.
+   *
+   * `currentColor` is not available inside a data URI, so the stroke is a
+   * fixed sand-500 that reads correctly on every surface we use.
+   */
+  .select-chevron {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23968f85' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1rem;
+    padding-right: 2.35rem;
+  }
+
+  /* Compact variant for inline table controls. */
+  .select-chevron-sm {
+    background-position: right 0.5rem center;
+    background-size: 0.8rem;
+    padding-right: 1.85rem;
+  }
+
+  /* Removes the native arrow in legacy Edge/IE. */
+  .select-chevron::-ms-expand {
+    display: none;
+  }
+
   /* Skip link: off-screen until focused. */
   .skip-link {
     position: absolute;

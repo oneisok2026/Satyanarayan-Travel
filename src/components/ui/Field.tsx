@@ -231,10 +231,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         aria-describedby={cn(descriptionId, errorId) || undefined}
         className={cn(
           controlBase,
-          'h-11 cursor-pointer appearance-none pr-10',
+          'h-11 cursor-pointer',
           error ? controlInvalid : controlValid,
-          // Chevron drawn as a background image to avoid an extra element.
-          "bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23807d78' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")] bg-[length:1rem] bg-[position:right_1rem_center] bg-no-repeat",
+          // Chevron comes from the shared .select-chevron utility, which also
+          // reserves the padding-right the arrow sits in.
+          'select-chevron',
         )}
         {...rest}
       >
