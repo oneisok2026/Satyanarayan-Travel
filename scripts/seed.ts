@@ -805,6 +805,14 @@ async function main(): Promise<void> {
   // ------------------------------------------------------------- settings --
   const settings = [
     { key: 'company.name', value: 'Satyanarayan Tour & Travel PVT. LTD.', group: 'company', isPublic: true },
+    { key: 'company.email', value: 'satyanarayantourandtravel@gmail.com', group: 'contact', isPublic: true },
+    { key: 'company.phone', value: '+91 89101 02904', group: 'contact', isPublic: true },
+    {
+      key: 'company.phoneAlt',
+      value: ['+91 93666 92603', '+91 82820 30868'],
+      group: 'contact',
+      isPublic: true,
+    },
     { key: 'company.tagline', value: 'Journeys planned by people who have made them', group: 'company', isPublic: true },
     { key: 'company.foundedYear', value: 2009, group: 'company', isPublic: true },
     { key: 'stats.travellers', value: 12000, group: 'stats', isPublic: true },

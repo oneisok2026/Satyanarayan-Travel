@@ -59,10 +59,23 @@ export const FOOTER_NAV = {
   ],
 } as const;
 
+/** Every published number, primary first. */
+const ALL_PHONES = [
+  clientEnv.NEXT_PUBLIC_CONTACT_PHONE,
+  ...clientEnv.NEXT_PUBLIC_CONTACT_PHONE_ALT.split(','),
+]
+  .map((entry) => entry.trim())
+  .filter((entry) => entry.length > 0);
+
 /** Contact details, resolved once from validated public env. */
 export const CONTACT = {
   phone: clientEnv.NEXT_PUBLIC_CONTACT_PHONE,
   phoneHref: `tel:${normalizePhone(clientEnv.NEXT_PUBLIC_CONTACT_PHONE)}`,
+  /** All numbers with their tel: links, for surfaces that list every line. */
+  phones: ALL_PHONES.map((phone) => ({
+    number: phone,
+    href: `tel:${normalizePhone(phone)}`,
+  })),
   email: clientEnv.NEXT_PUBLIC_CONTACT_EMAIL,
   emailHref: `mailto:${clientEnv.NEXT_PUBLIC_CONTACT_EMAIL}`,
   whatsapp: clientEnv.NEXT_PUBLIC_WHATSAPP_NUMBER,

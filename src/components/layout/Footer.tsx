@@ -21,13 +21,17 @@ export function Footer() {
             </p>
 
             <div className="mt-6 flex flex-col gap-2 text-sm">
-              <a
-                href={CONTACT.phoneHref}
-                className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-white"
-              >
-                <PhoneIcon />
-                {CONTACT.phone}
-              </a>
+              {CONTACT.phones.map((phone, index) => (
+                <a
+                  key={phone.number}
+                  href={phone.href}
+                  className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-white"
+                >
+                  {/* Icon on the first line only; the rest align beneath it. */}
+                  {index === 0 ? <PhoneIcon /> : <span className="w-4" aria-hidden="true" />}
+                  {phone.number}
+                </a>
+              ))}
               <a
                 href={CONTACT.emailHref}
                 className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-white"

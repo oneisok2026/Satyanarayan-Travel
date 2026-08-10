@@ -20,6 +20,7 @@
     "verify:indexes": "tsx scripts/verify-indexes.ts",
     "verify:isolation": "tsx --conditions react-server scripts/verify-isolation.ts",
     "verify:routes": "tsx --conditions react-server scripts/smoke-auth-routes.ts",
+    "create:admin": "tsx --conditions react-server scripts/create-admin.ts",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {

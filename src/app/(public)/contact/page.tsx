@@ -39,23 +39,28 @@ export default function ContactPage() {
               </p>
 
               <div className="mt-5 flex flex-col gap-3">
-                <a
-                  href={CONTACT.phoneHref}
-                  className="flex items-center gap-3 rounded-xl bg-sand-50 p-3.5 transition-colors hover:bg-sand-100"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-600 text-white"
+                {CONTACT.phones.map((phone, index) => (
+                  <a
+                    key={phone.number}
+                    href={phone.href}
+                    className="flex items-center gap-3 rounded-xl bg-sand-50 p-3.5 transition-colors hover:bg-sand-100"
                   >
-                    <PhoneIcon />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs text-sand-500">Call us</span>
-                    <span className="block truncate font-medium text-sand-900">
-                      {CONTACT.phone}
+                    <span
+                      aria-hidden="true"
+                      className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-600 text-white"
+                    >
+                      <PhoneIcon />
                     </span>
-                  </span>
-                </a>
+                    <span className="min-w-0">
+                      <span className="block text-xs text-sand-500">
+                        {index === 0 ? 'Call us' : 'Alternate line'}
+                      </span>
+                      <span className="block truncate font-medium text-sand-900">
+                        {phone.number}
+                      </span>
+                    </span>
+                  </a>
+                ))}
 
                 <a
                   href={CONTACT.emailHref}

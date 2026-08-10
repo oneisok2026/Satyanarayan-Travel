@@ -32,6 +32,8 @@ const clientSchema = z.object({
   NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: booleanish,
 
   NEXT_PUBLIC_CONTACT_PHONE: z.string().default(''),
+  /** Comma-separated additional numbers, listed after the primary. */
+  NEXT_PUBLIC_CONTACT_PHONE_ALT: z.string().default(''),
   NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().default(''),
   NEXT_PUBLIC_CONTACT_EMAIL: z.string().default(''),
 });
@@ -48,6 +50,7 @@ const parsedClient = clientSchema.safeParse({
   NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   NEXT_PUBLIC_ENABLE_GOOGLE_AUTH: process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH,
   NEXT_PUBLIC_CONTACT_PHONE: process.env.NEXT_PUBLIC_CONTACT_PHONE,
+  NEXT_PUBLIC_CONTACT_PHONE_ALT: process.env.NEXT_PUBLIC_CONTACT_PHONE_ALT,
   NEXT_PUBLIC_WHATSAPP_NUMBER: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
   NEXT_PUBLIC_CONTACT_EMAIL: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
 });
