@@ -1,6 +1,6 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { FloatingActions } from '@/components/layout/FloatingActions';
+import { WhatsAppWidget } from '@/components/layout/WhatsAppWidget';
 
 /** Shared chrome for every public page. */
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -11,7 +11,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
       <Footer />
-      <FloatingActions />
+      <WhatsAppWidget />
     </div>
   );
 }
