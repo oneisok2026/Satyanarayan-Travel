@@ -53,7 +53,11 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export const REVIEW_STATUSES = ['pending', 'approved', 'rejected'] as const;
 export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
 
-export const SERVICE_SLUGS = ['hotel-booking', 'car-rental', 'e-ticket'] as const;
+export const SERVICE_SLUGS = [
+  'hotel-booking',
+  'car-rental',
+  'e-ticket-booking',
+] as const;
 export type ServiceSlug = (typeof SERVICE_SLUGS)[number];
 
 /** Roles permitted into the admin area. */
