@@ -125,7 +125,7 @@ export function ImageUploadField({
       <span className="text-sm font-medium text-sand-800">
         {label}
         {required && (
-          <span className="ml-0.5 text-[--color-danger]" aria-hidden="true">
+          <span className="ml-0.5 text-danger" aria-hidden="true">
             *
           </span>
         )}
@@ -219,7 +219,7 @@ export function ImageUploadField({
                   setUrl('');
                   setUploadError(null);
                 }}
-                className="rounded-full px-3 py-1.5 text-sm font-medium text-sand-600 transition-colors hover:bg-sand-100"
+                className="rounded-full px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
               >
                 Remove
               </button>
@@ -245,7 +245,7 @@ export function ImageUploadField({
               'placeholder:text-sand-400 transition-[border-color,box-shadow] duration-200',
               'focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 focus:outline-none',
               shownError
-                ? 'border-[--color-danger] focus:border-[--color-danger]'
+                ? 'border-danger focus:border-danger'
                 : 'border-sand-300 hover:border-sand-400',
             )}
           />
@@ -257,7 +257,7 @@ export function ImageUploadField({
       </div>
 
       {shownError && (
-        <p id={errorId} role="alert" className="text-xs font-medium text-[--color-danger]">
+        <p id={errorId} role="alert" className="text-xs font-medium text-danger">
           {shownError}
         </p>
       )}

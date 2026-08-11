@@ -21,7 +21,7 @@ const variants: Record<Variant, string> = {
   outline:
     'border border-brand-700 text-brand-800 bg-transparent hover:bg-brand-700 hover:text-white',
   ghost: 'text-brand-800 hover:bg-brand-50',
-  danger: 'bg-[--color-danger] text-white hover:opacity-90',
+  danger: 'bg-danger text-white hover:opacity-90',
   whatsapp: 'bg-[#25D366] text-white shadow-sm hover:bg-[#1eb955] hover:shadow-md',
 };
 

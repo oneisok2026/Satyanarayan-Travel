@@ -28,7 +28,7 @@ const AUTO_DISMISS_MS = 4000;
 
 const VARIANTS: Record<ToastVariant, string> = {
   success: 'bg-emerald-600',
-  error: 'bg-[--color-danger]',
+  error: 'bg-danger',
   info: 'bg-brand-800',
 };
 
