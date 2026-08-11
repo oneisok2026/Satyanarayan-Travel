@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { LegalPage } from '@/components/layout/LegalPage';
 
 export const revalidate = 86400; // staticPage
 
-export const metadata: Metadata = {
-  title: 'Rules and Regulations',
-  description:
-    'Travel rules, group conduct and practical guidelines that apply to our tours.',
-  alternates: { canonical: '/rules-and-regulations' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/rules-and-regulations');
+}
 
 export default function RulesPage() {
   return (

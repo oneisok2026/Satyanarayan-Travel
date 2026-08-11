@@ -107,6 +107,7 @@ describe('server modules are marked server-only', () => {
     'src/services/booking.service.ts',
     'src/services/enquiry.service.ts',
     'src/services/audit.service.ts',
+    'src/services/page-seo.service.ts',
   ];
 
   it.each(mustBeServerOnly)('%s imports server-only', (relative) => {

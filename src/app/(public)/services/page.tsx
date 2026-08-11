@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { PageHero } from '@/components/layout/PageHero';
 import { ServicesStrip } from '@/components/home/ServicesStrip';
 import { CtaBand } from '@/components/home/CtaBand';
@@ -7,12 +8,9 @@ import { listPublishedServices } from '@/services/content.service';
 
 export const revalidate = 3600; // services
 
-export const metadata: Metadata = {
-  title: 'Travel Services',
-  description:
-    'Hotel booking, chauffeur-driven car rental and flight, rail and bus ticketing — booked individually or bundled into a full itinerary.',
-  alternates: { canonical: '/services' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/services');
+}
 
 export default async function ServicesPage() {
   const services = await listPublishedServices();

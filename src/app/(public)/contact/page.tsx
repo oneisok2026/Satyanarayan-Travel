@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { PageHero } from '@/components/layout/PageHero';
 import { Section } from '@/components/ui/Section';
 import { EnquiryForm } from '@/components/enquiry/EnquiryForm';
@@ -6,12 +7,9 @@ import { ButtonLink } from '@/components/ui/Button';
 import { CONTACT } from '@/constants/navigation';
 import { clientEnv } from '@/lib/env';
 
-export const metadata: Metadata = {
-  title: 'Contact Us',
-  description:
-    'Talk to a travel expert about your next trip. Call, WhatsApp or send an enquiry and we will respond within one working day.',
-  alternates: { canonical: '/contact' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/contact');
+}
 
 export default function ContactPage() {
   return (

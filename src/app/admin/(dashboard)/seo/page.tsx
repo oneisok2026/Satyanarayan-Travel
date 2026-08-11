@@ -4,7 +4,10 @@ import { requireAdminPage } from '@/lib/firebase/auth';
 import { connectToDatabase } from '@/lib/db/connect';
 import { TourPackage } from '@/models/TourPackage';
 import { Destination } from '@/models/Destination';
+import { Service } from '@/models/Service';
 import { BlogPost } from '@/models/BlogPost';
+import { listSeoTargets } from '@/services/page-seo.service';
+import { SeoForm } from '@/components/admin/SeoForm';
 import { PageHeading } from '@/components/admin/PageHeading';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
@@ -25,6 +28,7 @@ interface SeoRow {
   path: string;
   hasTitle: boolean;
   hasDescription: boolean;
+  hasKeywords: boolean;
 }
 
 /**
@@ -35,11 +39,11 @@ interface SeoRow {
  * and short description — but explicit values give better search results.
  */
 export default async function AdminSeoPage() {
-  await requireAdminPage('/admin/seo');
+  const admin = await requireAdminPage('/admin/seo');
 
   await connectToDatabase();
 
-  const [packages, destinations, posts] = await Promise.all([
+  const [packages, destinations, services, posts, targets] = await Promise.all([
     TourPackage.find({ status: 'published' })
       .select('title slug seo')
       .sort({ updatedAt: -1 })
@@ -48,10 +52,15 @@ export default async function AdminSeoPage() {
       .select('name slug seo')
       .sort({ updatedAt: -1 })
       .lean(),
+    Service.find({ status: 'published' })
+      .select('name slug seo')
+      .sort({ updatedAt: -1 })
+      .lean(),
     BlogPost.find({ status: 'published' })
       .select('title slug seo')
       .sort({ updatedAt: -1 })
       .lean(),
+    listSeoTargets(),
   ]);
 
   const rows: SeoRow[] = [
@@ -62,6 +71,7 @@ export default async function AdminSeoPage() {
       path: `/packages/${doc.slug}`,
       hasTitle: Boolean(doc.seo?.title),
       hasDescription: Boolean(doc.seo?.description),
+      hasKeywords: Boolean(doc.seo?.keywords?.length),
     })),
     ...destinations.map((doc) => ({
       id: `dest-${doc._id}`,
@@ -70,6 +80,16 @@ export default async function AdminSeoPage() {
       path: `/destinations/${doc.slug}`,
       hasTitle: Boolean(doc.seo?.title),
       hasDescription: Boolean(doc.seo?.description),
+      hasKeywords: Boolean(doc.seo?.keywords?.length),
+    })),
+    ...services.map((doc) => ({
+      id: `svc-${doc._id}`,
+      title: doc.name,
+      type: 'Service',
+      path: `/services/${doc.slug}`,
+      hasTitle: Boolean(doc.seo?.title),
+      hasDescription: Boolean(doc.seo?.description),
+      hasKeywords: Boolean(doc.seo?.keywords?.length),
     })),
     ...posts.map((doc) => ({
       id: `post-${doc._id}`,
@@ -78,8 +98,10 @@ export default async function AdminSeoPage() {
       path: `/blog/${doc.slug}`,
       hasTitle: Boolean(doc.seo?.title),
       hasDescription: Boolean(doc.seo?.description),
+      hasKeywords: Boolean(doc.seo?.keywords?.length),
     })),
   ];
+
 
   const incomplete = rows.filter((row) => !row.hasTitle || !row.hasDescription).length;
 
@@ -115,6 +137,16 @@ export default async function AdminSeoPage() {
       render: (row) => (
         <Badge tone={row.hasDescription ? 'success' : 'warning'}>
           {row.hasDescription ? 'Set' : 'Missing'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'seoKeywords',
+      header: 'Keywords',
+      secondary: true,
+      render: (row) => (
+        <Badge tone={row.hasKeywords ? 'success' : 'neutral'}>
+          {row.hasKeywords ? 'Set' : 'None'}
         </Badge>
       ),
     },
@@ -169,15 +201,31 @@ export default async function AdminSeoPage() {
         </Alert>
       )}
 
-      <DataTable
-        columns={columns}
-        rows={rows}
-        rowKey={(row) => row.id}
-        empty={{
-          title: 'No published content',
-          description: 'Publish packages, destinations or blog posts to see them here.',
-        }}
-      />
+      {admin.role === 'super_admin' && (
+        <section className="mb-8">
+          <SeoForm targets={targets} />
+        </section>
+      )}
+
+      <section>
+        <h2 className="mb-1 font-display text-lg font-semibold text-sand-900">
+          Coverage
+        </h2>
+        <p className="mb-4 text-sm text-sand-600">
+          Published content and whether each has a title and description set.
+        </p>
+
+        <DataTable
+          columns={columns}
+          rows={rows}
+          rowKey={(row) => row.id}
+          empty={{
+            title: 'No published content',
+            description:
+              'Publish packages, destinations, services or blog posts to see them here.',
+          }}
+        />
+      </section>
     </>
   );
 }

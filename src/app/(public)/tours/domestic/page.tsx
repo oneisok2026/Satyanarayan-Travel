@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { PageHero } from '@/components/layout/PageHero';
 import { PackageGrid } from '@/components/tours/PackageGrid';
 import { Pagination } from '@/components/ui/Pagination';
@@ -7,12 +8,9 @@ import { paginationSchema } from '@/lib/validation/common.schema';
 
 export const revalidate = 300; // packages
 
-export const metadata: Metadata = {
-  title: 'Domestic Tour Packages in India',
-  description:
-    'Holiday packages across India — Kashmir, Kerala, Rajasthan, Himachal, Goa and the Andaman Islands, with day-wise itineraries and transparent pricing.',
-  alternates: { canonical: '/tours/domestic' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/tours/domestic');
+}
 
 export default async function DomesticToursPage({
   searchParams,

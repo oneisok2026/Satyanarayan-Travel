@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { PageHero } from '@/components/layout/PageHero';
 import { PackageGrid } from '@/components/tours/PackageGrid';
 import { Pagination } from '@/components/ui/Pagination';
@@ -7,12 +8,9 @@ import { paginationSchema } from '@/lib/validation/common.schema';
 
 export const revalidate = 300; // packages
 
-export const metadata: Metadata = {
-  title: 'International Tour Packages',
-  description:
-    'International holiday packages to Thailand, Dubai, Singapore and Bali — with visa guidance, airport transfers and local support included.',
-  alternates: { canonical: '/tours/international' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/tours/international');
+}
 
 export default async function InternationalToursPage({
   searchParams,

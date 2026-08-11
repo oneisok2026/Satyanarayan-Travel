@@ -1,15 +1,13 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { LegalPage } from '@/components/layout/LegalPage';
 import { CONTACT } from '@/constants/navigation';
 
 export const revalidate = 86400; // staticPage
 
-export const metadata: Metadata = {
-  title: 'Terms and Conditions',
-  description:
-    'The terms that apply when you book a tour package or travel service with us.',
-  alternates: { canonical: '/terms-and-conditions' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/terms-and-conditions');
+}
 
 export default function TermsPage() {
   return (

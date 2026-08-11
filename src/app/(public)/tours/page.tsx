@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { Suspense } from 'react';
 import { PageHero } from '@/components/layout/PageHero';
 import { PackageGrid } from '@/components/tours/PackageGrid';
@@ -18,12 +19,9 @@ interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export const metadata: Metadata = {
-  title: 'Tour Packages',
-  description:
-    'Browse domestic and international tour packages with day-wise itineraries, inclusions and transparent pricing.',
-  alternates: { canonical: '/tours' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/tours');
+}
 
 export default async function ToursPage({ searchParams }: PageProps) {
   return (

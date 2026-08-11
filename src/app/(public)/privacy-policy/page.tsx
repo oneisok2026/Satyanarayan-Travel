@@ -1,15 +1,13 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { LegalPage } from '@/components/layout/LegalPage';
 import { CONTACT } from '@/constants/navigation';
 
 export const revalidate = 86400; // staticPage
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description:
-    'How we collect, use and protect your personal information when you enquire or book with us.',
-  alternates: { canonical: '/privacy-policy' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/privacy-policy');
+}
 
 export default function PrivacyPolicyPage() {
   return (

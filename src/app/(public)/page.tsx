@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { Hero } from '@/components/home/Hero';
 import { WhyChooseUs } from '@/components/home/WhyChooseUs';
 import { ServicesStrip } from '@/components/home/ServicesStrip';
@@ -20,9 +21,9 @@ import {
   listApprovedReviews,
 } from '@/services/content.service';
 
-export const metadata: Metadata = {
-  alternates: { canonical: '/' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/');
+}
 
 // Public catalogue content is safe to cache and revalidate periodically.
 export const revalidate = 600; // home

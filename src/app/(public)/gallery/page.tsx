@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import Link from 'next/link';
 import { PageHero } from '@/components/layout/PageHero';
 import { GalleryGrid } from '@/components/gallery/GalleryGrid';
@@ -10,12 +11,9 @@ import { cn, slugify } from '@/lib/utils';
 
 export const revalidate = 900; // gallery
 
-export const metadata: Metadata = {
-  title: 'Gallery',
-  description:
-    'Photographs from the journeys we plan — destinations, stays and moments from our travellers.',
-  alternates: { canonical: '/gallery' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/gallery');
+}
 
 export default async function GalleryPage({
   searchParams,

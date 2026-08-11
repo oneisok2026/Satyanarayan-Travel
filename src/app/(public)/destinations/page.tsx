@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import { PageHero } from '@/components/layout/PageHero';
 import { DestinationCard } from '@/components/destinations/DestinationCard';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
@@ -7,12 +8,9 @@ import { listPublishedDestinations } from '@/services/destination.service';
 
 export const revalidate = 900; // destinations
 
-export const metadata: Metadata = {
-  title: 'Destinations',
-  description:
-    'Explore the destinations we cover across India and abroad, with curated tour packages for each.',
-  alternates: { canonical: '/destinations' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/destinations');
+}
 
 export default async function DestinationsPage() {
   const { destinations } = await listPublishedDestinations({ page: 1, limit: 60 });

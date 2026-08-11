@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/services/page-seo.service';
 import Image from 'next/image';
 import { PageHero } from '@/components/layout/PageHero';
 import { Section, SectionHeading } from '@/components/ui/Section';
@@ -8,12 +9,9 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 export const revalidate = 86400; // staticPage
 
-export const metadata: Metadata = {
-  title: 'About Us',
-  description:
-    'A travel agency run by people who have made these journeys themselves — planning domestic and international trips since 2009.',
-  alternates: { canonical: '/about' },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/about');
+}
 
 const VALUES = [
   {
