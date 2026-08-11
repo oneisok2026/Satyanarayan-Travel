@@ -86,15 +86,6 @@ function checkScripts(): void {
 function checkNextConfig(): void {
   const config = readFileSync(join(ROOT, 'next.config.mjs'), 'utf8');
 
-  // Hostinger runs a long-lived Node process; standalone keeps the deploy
-  // artefact small and self-contained.
-  record(
-    'output: standalone',
-    config.includes("output: 'standalone'") ? 'pass' : 'warn',
-    config.includes("output: 'standalone'") ? 'enabled' : 'not set',
-    "Set output: 'standalone' and start with node .next/standalone/server.js",
-  );
-
   record(
     'Security headers',
     config.includes('Strict-Transport-Security') ? 'pass' : 'fail',

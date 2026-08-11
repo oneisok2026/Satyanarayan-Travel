@@ -12,6 +12,10 @@ const eslintConfig = [
     ignores: [
       'node_modules/**',
       '.next/**',
+      // `npm run clean` builds into a timestamped directory when .next is
+      // locked by an editor, so generated output must be ignored by pattern.
+      '.next-build-*/**',
+      '.next-stale-*/**',
       'out/**',
       'build/**',
       'coverage/**',

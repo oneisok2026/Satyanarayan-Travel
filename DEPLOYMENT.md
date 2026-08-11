@@ -96,31 +96,36 @@ the literal `\n` sequences — the env loader converts them.
 ## 3. Build and start
 
 ```bash
-npm ci                # exact versions from package-lock.json
-npm run build         # next build
+npm ci          # exact versions from package-lock.json
+npm run build   # next build
+npm start       # next start
 ```
 
-`next.config.mjs` sets `output: 'standalone'`, so the production start command
-is:
-
-```bash
-node .next/standalone/server.js
-```
-
-Set `PORT` in the Hostinger panel if the default is not 3000.
-
-> `npm start` runs `next start`, which prints a warning under `standalone` and
-> is intended for local checks only.
-
-The standalone bundle does **not** include `public/` or `.next/static/`. Copy
-both alongside `server.js` when deploying manually:
+Hostinger runs the app as a long-lived Node process, so `next start` is the
+correct production server. Point the panel at:
 
 ```
-.next/standalone/
-├── server.js
-├── .next/static/     ← copy from .next/static
-└── public/           ← copy from public
+Build command:  npm run build
+Start command:  npm start
 ```
+
+Set `PORT` in the panel if the default is not 3000 — the start script honours
+it.
+
+> **Do not set `output: 'standalone'` in `next.config.mjs`.** It breaks both
+> `next dev` and `next start`: the server binds its port but never finishes
+> compiling, so requests hang indefinitely. Standalone output only suits hosts
+> that run `server.js` directly, which is not how this app is deployed.
+
+### Environment variables
+
+`.env.local` is git-ignored and never deployed, so every variable must be set
+in the Hostinger panel. Nothing is inherited from a developer machine.
+
+If a required variable is missing the server still starts, but every page
+renders an error, because environment validation throws at request time. Check
+`/api/health` immediately after deploying — it reports which subsystem is
+misconfigured without disclosing any value.
 
 ---
 

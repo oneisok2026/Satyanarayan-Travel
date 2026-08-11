@@ -1,0 +1,43 @@
+{
+  // Build and dependency directories are excluded from the file watcher.
+  //
+  // Without this, VS Code indexes .next/ and holds open file handles on
+  // Windows. Next.js then cannot delete or rewrite those files between
+  // builds, and `next dev` hangs after "Starting..." — the port binds but
+  // compilation never completes.
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/node_modules/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/coverage/**": true
+  },
+
+  // Keep generated output out of search results and the file tree.
+  "search.exclude": {
+    "**/.next": true,
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/package-lock.json": true
+  },
+
+  "files.exclude": {
+    "**/.next": true
+  },
+
+  // The project uses the workspace TypeScript version, so editor diagnostics
+  // match what `npm run typecheck` reports.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
+}

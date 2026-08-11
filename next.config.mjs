@@ -18,14 +18,23 @@ const securityHeaders = [
   },
 ];
 
+/**
+ * Build output directory.
+ *
+ * Defaults to `.next`. On Windows an editor can hold an open handle inside
+ * that folder, and Next.js then hangs on startup — it prints "Starting..."
+ * and never compiles, because it cannot clear the stale output. `npm run
+ * clean` detects that and sets NEXT_DIST_DIR to a fresh directory so work
+ * can continue without closing the editor or rebooting.
+ */
+const distDir = process.env.NEXT_DIST_DIR || '.next';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir,
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-
-  // Hostinger Cloud runs the app as a long-lived Node process.
-  output: 'standalone',
 
   images: {
     formats: ['image/avif', 'image/webp'],
