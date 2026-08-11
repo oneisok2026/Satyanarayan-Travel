@@ -55,6 +55,8 @@ export default async function EditPACKAGEPage({
       <PageHeading
         title={`Edit: ${title}`}
         description="Changes are recorded in the audit log."
+        backHref="/admin/packages"
+        backLabel="All packages"
       />
 
       <CatalogueForm

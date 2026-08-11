@@ -55,6 +55,8 @@ export default async function EditCATEGORYPage({
       <PageHeading
         title={`Edit: ${title}`}
         description="Changes are recorded in the audit log."
+        backHref="/admin/categories"
+        backLabel="All categories"
       />
 
       <CatalogueForm

@@ -55,6 +55,8 @@ export default async function EditDESTINATIONPage({
       <PageHeading
         title={`Edit: ${title}`}
         description="Changes are recorded in the audit log."
+        backHref="/admin/destinations"
+        backLabel="All destinations"
       />
 
       <CatalogueForm

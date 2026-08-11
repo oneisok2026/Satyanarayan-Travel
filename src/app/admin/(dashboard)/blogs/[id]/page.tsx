@@ -55,6 +55,8 @@ export default async function EditBLOGPage({
       <PageHeading
         title={`Edit: ${title}`}
         description="Changes are recorded in the audit log."
+        backHref="/admin/blogs"
+        backLabel="All articles"
       />
 
       <CatalogueForm
