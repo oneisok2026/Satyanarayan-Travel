@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { NotificationBell } from './NotificationBell';
 
 /**
  * Admin topbar.
@@ -45,8 +46,10 @@ export function AdminTopbar({ email }: { email: string }) {
         </Link>
       </div>
 
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="truncate text-sm text-sand-600" title={email}>
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <NotificationBell />
+
+        <span className="hidden truncate text-sm text-sand-600 sm:block" title={email}>
           {email}
         </span>
 
