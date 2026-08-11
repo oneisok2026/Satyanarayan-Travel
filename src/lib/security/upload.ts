@@ -143,3 +143,16 @@ export function safeFilename(original: string): string {
     .replace(/-{2,}/g, '-')
     .slice(0, 120) || 'file';
 }
+
+/**
+ * Storage base name derived from a client-supplied filename.
+ *
+ * The extension is dropped here and re-added by the caller from the *detected*
+ * content type, so "photo.jpg.svg" cannot be stored as an SVG. Stripping it
+ * before sanitizing matters: `safeFilename` removes leading dots, so a name
+ * that is nothing but an extension (".png") would otherwise become "png".
+ */
+export function uploadBaseName(original: string): string {
+  const withoutExtension = original.replace(/\.[^./\\]*$/, '').trim();
+  return withoutExtension ? safeFilename(withoutExtension.slice(0, 60)) : 'image';
+}

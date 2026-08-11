@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input, Textarea, Select, Checkbox } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
 import { useToast } from '@/components/ui/Toast';
+import { ImageUploadField } from './ImageUploadField';
 import { slugify } from '@/lib/utils';
 
 export type FieldKind =
@@ -17,7 +18,9 @@ export type FieldKind =
   | 'checkbox'
   | 'url'
   /** Newline-separated values, stored as a string array. */
-  | 'list';
+  | 'list'
+  /** Image URL with device upload, drag-and-drop and a preview. */
+  | 'image';
 
 export interface FormField {
   name: string;
@@ -32,6 +35,11 @@ export interface FormField {
   rows?: number;
   min?: number;
   max?: number;
+  /**
+   * Storage folder for `image` fields. Must be one of UPLOAD_FOLDERS; defaults
+   * to the resource name, which is already in that list for every editor.
+   */
+  uploadFolder?: string;
   /** Renders full width in the two-column grid. */
   wide?: boolean;
 }
@@ -207,6 +215,22 @@ export function CatalogueForm({
                       error={firstError(field)}
                     />
                   </div>
+                );
+              }
+
+              if (field.kind === 'image') {
+                return (
+                  <ImageUploadField
+                    key={field.name}
+                    name={field.name}
+                    label={field.label}
+                    folder={field.uploadFolder ?? resource}
+                    defaultValue={value == null ? '' : String(value)}
+                    required={field.required}
+                    description={field.description}
+                    error={firstError(field)}
+                    className={wrapper ?? 'sm:col-span-2'}
+                  />
                 );
               }
 

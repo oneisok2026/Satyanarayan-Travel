@@ -87,6 +87,13 @@ const serverSchema = z.object({
       'FIREBASE_PRIVATE_KEY does not look like a PEM private key',
     ),
 
+  /**
+   * Storage bucket for admin media uploads. Optional: when unset the upload
+   * endpoint reports itself unavailable and the admin can still paste a URL,
+   * rather than the whole server failing to boot.
+   */
+  FIREBASE_STORAGE_BUCKET: z.string().default(''),
+
   MONGODB_URI: z
     .string()
     .min(1, 'MONGODB_URI is required')

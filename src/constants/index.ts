@@ -78,6 +78,25 @@ export const UPLOAD_LIMITS = {
   allowedDocumentTypes: ['application/pdf'] as const,
 } as const;
 
+/**
+ * Storage folders an upload may target.
+ *
+ * A closed list, because the folder becomes part of the object path. Anything
+ * outside it is rejected rather than sanitized, so a crafted value cannot
+ * write into an unexpected prefix.
+ */
+export const UPLOAD_FOLDERS = [
+  'packages',
+  'destinations',
+  'blogs',
+  'services',
+  'categories',
+  'gallery',
+  'settings',
+] as const;
+
+export type UploadFolder = (typeof UPLOAD_FOLDERS)[number];
+
 /** Rate limits per window, keyed by logical bucket. */
 export const RATE_LIMITS = {
   enquiry: { limit: 5, windowMs: 10 * 60 * 1000 },
@@ -91,6 +110,11 @@ export const RATE_LIMITS = {
    */
   loginAttempt: { limit: 8, windowMs: 15 * 60 * 1000 },
   contact: { limit: 5, windowMs: 10 * 60 * 1000 },
+  /**
+   * Media uploads per admin. Generous enough to fill a gallery in one sitting,
+   * tight enough that a stolen session cannot be used to fill the bucket.
+   */
+  upload: { limit: 40, windowMs: 10 * 60 * 1000 },
   default: { limit: 60, windowMs: 60 * 1000 },
 } as const;
 

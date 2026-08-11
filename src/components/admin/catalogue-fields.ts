@@ -95,9 +95,10 @@ export const PACKAGE_FIELDS: FormSection[] = [
       {
         name: 'coverImageUrl',
         path: 'coverImage.url',
-        label: 'Image URL',
-        kind: 'url',
+        label: 'Image',
+        kind: 'image',
         required: true,
+        description: 'Upload from your device, or paste a link.',
         wide: true,
       },
       {
@@ -183,9 +184,10 @@ export const DESTINATION_FIELDS: FormSection[] = [
       {
         name: 'coverImageUrl',
         path: 'coverImage.url',
-        label: 'Image URL',
-        kind: 'url',
+        label: 'Image',
+        kind: 'image',
         required: true,
+        description: 'Upload from your device, or paste a link.',
         wide: true,
       },
       {
@@ -310,9 +312,10 @@ export const BLOG_FIELDS: FormSection[] = [
       {
         name: 'coverImageUrl',
         path: 'coverImage.url',
-        label: 'Image URL',
-        kind: 'url',
+        label: 'Image',
+        kind: 'image',
         required: true,
+        description: 'Upload from your device, or paste a link.',
         wide: true,
       },
       {

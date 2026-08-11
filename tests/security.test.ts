@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sanitizeQueryInput, escapeRegex } from '@/lib/security/sanitize';
-import { safeFilename } from '@/lib/security/upload';
+import { safeFilename, uploadBaseName } from '@/lib/security/upload';
 import { __testing } from '@/lib/logger';
 import { updateProfileSchema } from '@/lib/validation/auth.schema';
 import { createBookingSchema } from '@/lib/validation/booking.schema';
@@ -49,6 +49,39 @@ describe('safeFilename', () => {
 
   it('never returns an empty name', () => {
     expect(safeFilename('...')).toBe('file');
+  });
+});
+
+describe('upload object naming', () => {
+  const baseNameFor = uploadBaseName;
+
+  it('drops the client extension so the detected type decides it', () => {
+    // A double extension must not survive into the stored object name.
+    expect(baseNameFor('photo.jpg.svg')).toBe('photo.jpg');
+    expect(baseNameFor('cover.png')).toBe('cover');
+  });
+
+  it('cannot escape its folder', () => {
+    const name = baseNameFor('../../../secrets.png');
+    expect(name).not.toContain('/');
+    expect(name).not.toContain('..');
+  });
+
+  it('always yields a usable name', () => {
+    expect(baseNameFor('.png')).toBe('image');
+    expect(baseNameFor('')).toBe('image');
+  });
+});
+
+describe('upload folder allowlist', () => {
+  it('accepts only the declared folders', async () => {
+    const { UPLOAD_FOLDERS } = await import('@/constants');
+
+    expect(UPLOAD_FOLDERS.includes('packages' as never)).toBe(true);
+    // The folder becomes part of the object path, so anything crafted is
+    // rejected outright rather than sanitized into something plausible.
+    expect(UPLOAD_FOLDERS.includes('../../etc' as never)).toBe(false);
+    expect(UPLOAD_FOLDERS.includes('' as never)).toBe(false);
   });
 });
 

@@ -79,7 +79,8 @@ describe('server-only variables are never public', () => {
       return (
         source.includes('firebase-admin') ||
         source.includes('@/lib/firebase/admin') ||
-        source.includes('@/lib/firebase/session')
+        source.includes('@/lib/firebase/session') ||
+        source.includes('@/lib/firebase/storage')
       );
     });
     expect(offenders).toEqual([]);
@@ -98,7 +99,9 @@ describe('server modules are marked server-only', () => {
     'src/lib/firebase/admin.ts',
     'src/lib/firebase/session.ts',
     'src/lib/firebase/auth.ts',
+    'src/lib/firebase/storage.ts',
     'src/lib/db/connect.ts',
+    'src/lib/security/upload.ts',
     'src/lib/email/provider.ts',
     'src/services/user.service.ts',
     'src/services/booking.service.ts',
