@@ -1,5 +1,10 @@
 import type { FormSection } from './CatalogueForm';
-import { CONTENT_STATUSES, PACKAGE_TYPES } from '@/constants';
+import {
+  CONTENT_STATUSES,
+  PACKAGE_TYPES,
+  SOCIAL_PLATFORMS,
+  SOCIAL_PLATFORM_LABELS,
+} from '@/constants';
 
 /**
  * Field definitions for the catalogue editors.
@@ -461,6 +466,50 @@ export const HERO_SLIDE_FIELDS: FormSection[] = [
   },
 ];
 
+export const SOCIAL_LINK_FIELDS: FormSection[] = [
+  {
+    title: 'Social profile',
+    description: 'Shown as an icon on the right of the top bar.',
+    fields: [
+      {
+        name: 'platform',
+        label: 'Platform',
+        kind: 'select',
+        required: true,
+        options: SOCIAL_PLATFORMS.map((platform) => ({
+          value: platform,
+          label: SOCIAL_PLATFORM_LABELS[platform],
+        })),
+        description: 'Chooses which icon is shown.',
+      },
+      {
+        name: 'url',
+        label: 'Profile link',
+        kind: 'url',
+        required: true,
+        placeholder: 'https://facebook.com/yourpage',
+        description: 'The full address, including https://',
+        wide: true,
+      },
+      {
+        name: 'label',
+        label: 'Accessible name',
+        kind: 'text',
+        description: 'Read by screen readers. Defaults to the platform name.',
+        wide: true,
+      },
+      {
+        name: 'sortOrder',
+        label: 'Sort order',
+        kind: 'number',
+        min: 0,
+        description: 'Lower numbers appear first.',
+      },
+      { name: 'status', label: 'Status', kind: 'select', options: statusOptions, required: true },
+    ],
+  },
+];
+
 export const FIELDS_BY_RESOURCE = {
   packages: PACKAGE_FIELDS,
   destinations: DESTINATION_FIELDS,
@@ -469,4 +518,5 @@ export const FIELDS_BY_RESOURCE = {
   blogs: BLOG_FIELDS,
   gallery: GALLERY_FIELDS,
   'hero-slides': HERO_SLIDE_FIELDS,
+  'social-links': SOCIAL_LINK_FIELDS,
 } as const;

@@ -9,6 +9,7 @@ import { Service } from '@/models/Service';
 import { BlogPost } from '@/models/BlogPost';
 import { GalleryItem } from '@/models/GalleryItem';
 import { HeroSlide } from '@/models/HeroSlide';
+import { SocialLink } from '@/models/SocialLink';
 import { Booking } from '@/models/Booking';
 import { toObjectId } from '@/lib/security/sanitize';
 import { conflict, notFound } from '@/lib/errors';
@@ -31,6 +32,7 @@ export const CATALOGUE_RESOURCES = {
   blogs: { model: BlogPost, label: 'Article', audit: 'blog' },
   gallery: { model: GalleryItem, label: 'Gallery item', audit: 'gallery' },
   'hero-slides': { model: HeroSlide, label: 'Hero slide', audit: 'hero-slides' },
+  'social-links': { model: SocialLink, label: 'Social link', audit: 'social-links' },
 } as const;
 
 export type CatalogueResource = keyof typeof CATALOGUE_RESOURCES;

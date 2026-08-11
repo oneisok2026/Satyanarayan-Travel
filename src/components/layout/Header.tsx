@@ -8,6 +8,7 @@ import { MAIN_NAV, CONTACT } from '@/constants/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { MobileMenu } from './MobileMenu';
 import { Logo } from './Logo';
+import { SocialIcons, type SocialLinkItem } from './SocialIcons';
 import { ADMIN_ROLES } from '@/constants';
 
 /**
@@ -17,7 +18,11 @@ import { ADMIN_ROLES } from '@/constants';
  * The logo and links render immediately; only the account chip depends on
  * auth state, which arrives server-resolved so it does not flash.
  */
-export function Header() {
+export function Header({
+  socialLinks = [],
+}: {
+  socialLinks?: SocialLinkItem[];
+}) {
   const pathname = usePathname();
   const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
@@ -41,18 +46,27 @@ export function Header() {
 
   return (
     <>
-      {/* Announcement / contact bar — hidden on small screens to save height */}
+      {/* Contact bar — hidden on small screens to save height */}
       <div className="hidden bg-brand-900 text-sand-200 lg:block">
         <div className="container-page flex h-10 items-center justify-between text-xs">
-          <p>Curated journeys across India and beyond since 2009</p>
           <div className="flex items-center gap-5">
-            <a href={CONTACT.phoneHref} className="hover:text-white">
-              {CONTACT.phone}
-            </a>
-            <a href={CONTACT.emailHref} className="hover:text-white">
+            <a
+              href={CONTACT.emailHref}
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+            >
+              <MailIcon />
               {CONTACT.email}
             </a>
+            <a
+              href={CONTACT.phoneHref}
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+            >
+              <PhoneIcon />
+              {CONTACT.phone}
+            </a>
           </div>
+
+          <SocialIcons links={socialLinks} />
         </div>
       </div>
 
@@ -146,12 +160,17 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link
-              href={accountHref}
-              className="hidden rounded-full px-4 py-2 text-sm font-medium text-sand-700 transition-colors hover:bg-sand-100 hover:text-brand-800 lg:block"
-            >
-              {user ? user.name.split(' ')[0] : 'Sign in'}
-            </Link>
+            {/* Shown only once signed in: the account link is how a customer
+                reaches their bookings, but the signed-out "Sign in" prompt is
+                deliberately absent from the bar. */}
+            {user && (
+              <Link
+                href={accountHref}
+                className="hidden rounded-full px-4 py-2 text-sm font-medium text-sand-700 transition-colors hover:bg-sand-100 hover:text-brand-800 lg:block"
+              >
+                {user.name.split(' ')[0]}
+              </Link>
+            )}
 
             <Link
               href="/contact"
@@ -195,5 +214,40 @@ export function Header() {
         userName={user?.name}
       />
     </>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-3.5"
+      aria-hidden="true"
+    >
+      <rect x="2.5" y="5" width="19" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-3.5"
+      aria-hidden="true"
+    >
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" />
+    </svg>
   );
 }

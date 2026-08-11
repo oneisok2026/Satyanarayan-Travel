@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CONTENT_STATUSES, PACKAGE_TYPES } from '@/constants';
+import { CONTENT_STATUSES, PACKAGE_TYPES, SOCIAL_PLATFORMS } from '@/constants';
 import { objectIdSchema, slugSchema } from './common.schema';
 import { slugify } from '@/lib/utils';
 
@@ -240,6 +240,31 @@ export const heroSlideWriteSchema = z
       });
     }
   });
+
+// ---------------------------------------------------------- social link --
+
+/**
+ * The URL is rendered as an outbound anchor, so only http(s) is accepted.
+ * `z.string().url()` alone would happily pass `javascript:` and `data:`.
+ */
+export const socialLinkWriteSchema = z
+  .object({
+    platform: z.enum(SOCIAL_PLATFORMS),
+    url: z
+      .string()
+      .trim()
+      .min(1, 'Enter a link')
+      .max(500)
+      .url('Enter a full URL, including https://')
+      .refine(
+        (value) => /^https?:\/\//i.test(value),
+        'The link must start with http:// or https://',
+      ),
+    label: z.string().trim().max(60).optional().or(z.literal('')),
+    sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
+    status: z.enum(CONTENT_STATUSES).default('published'),
+  })
+  .strict();
 
 export type PackageWriteInput = z.infer<typeof packageWriteSchema>;
 export type DestinationWriteInput = z.infer<typeof destinationWriteSchema>;

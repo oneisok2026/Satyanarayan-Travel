@@ -33,6 +33,7 @@ async function main(): Promise<void> {
     Service,
     SiteSetting,
     HeroSlide,
+    SocialLink,
   } = await import('../src/models/index');
 
   await mongoose.connect(process.env.MONGODB_URI as string, {
@@ -52,6 +53,7 @@ async function main(): Promise<void> {
       GalleryItem.deleteMany({}),
       Service.deleteMany({}),
       HeroSlide.deleteMany({}),
+      SocialLink.deleteMany({}),
     ]);
   }
 
@@ -855,6 +857,25 @@ async function main(): Promise<void> {
     );
   }
   console.log(`  hero slides   ${heroSlides.length}`);
+
+  // -------------------------------------------------------- social links --
+  // Placeholders so the header icon row is visible; edit or delete them from
+  // Content → Social links.
+  const socialLinks = [
+    { platform: 'facebook', url: 'https://facebook.com/satyanarayantourandtravel' },
+    { platform: 'instagram', url: 'https://instagram.com/satyanarayantourandtravel' },
+    { platform: 'youtube', url: 'https://youtube.com/@satyanarayantourandtravel' },
+    { platform: 'linkedin', url: 'https://linkedin.com/company/satyanarayantourandtravel' },
+  ] as const;
+
+  for (const [index, link] of socialLinks.entries()) {
+    await SocialLink.updateOne(
+      { platform: link.platform },
+      { $set: { ...link, sortOrder: index, status: 'published' } },
+      { upsert: true },
+    );
+  }
+  console.log(`  social links  ${socialLinks.length}`);
 
   // ------------------------------------------------------------- settings --
   const settings = [

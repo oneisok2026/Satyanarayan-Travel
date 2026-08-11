@@ -44,6 +44,11 @@ export {
   type HeroSlideDocument,
 } from './HeroSlide';
 export {
+  SocialLink,
+  type SocialLinkAttributes,
+  type SocialLinkDocument,
+} from './SocialLink';
+export {
   SiteSetting,
   type SiteSettingAttributes,
   type SiteSettingDocument,

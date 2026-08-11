@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/lib/db/connect';
 import { BlogPost, type BlogPostAttributes } from '@/models/BlogPost';
 import { GalleryItem } from '@/models/GalleryItem';
 import { HeroSlide } from '@/models/HeroSlide';
+import { SocialLink } from '@/models/SocialLink';
 import { Service } from '@/models/Service';
 import { Review } from '@/models/Review';
 import { TourPackage } from '@/models/TourPackage';
@@ -13,6 +14,7 @@ import { notFound, conflict } from '@/lib/errors';
 import { buildSearchRegex, toObjectId } from '@/lib/security/sanitize';
 import { offsetFor } from '@/lib/validation/common.schema';
 import type { BlogPostDTO, GalleryItemDTO, ReviewDTO, ServiceDTO } from '@/types';
+import type { SocialPlatform } from '@/constants';
 import {
   toBlogPostDTO,
   toBlogSummaryDTO,
@@ -343,5 +345,30 @@ export async function listHeroSlides(): Promise<
     ctaHref: document.ctaHref || undefined,
     secondaryCtaLabel: document.secondaryCtaLabel || undefined,
     secondaryCtaHref: document.secondaryCtaHref || undefined,
+  }));
+}
+
+/**
+ * Published social links for the header, in display order.
+ *
+ * Plain objects rather than Mongoose documents: the header renders these in a
+ * layout shared by every page, and ObjectId/Date cannot cross into a Client
+ * Component.
+ */
+export async function listSocialLinks(): Promise<
+  { id: string; platform: SocialPlatform; url: string; label?: string }[]
+> {
+  await connectToDatabase();
+
+  const documents = await SocialLink.find({ status: 'published' })
+    .sort({ sortOrder: 1, createdAt: 1 })
+    .limit(10)
+    .lean();
+
+  return documents.map((document) => ({
+    id: String(document._id),
+    platform: document.platform,
+    url: document.url,
+    label: document.label || undefined,
   }));
 }

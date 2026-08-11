@@ -13,6 +13,7 @@ import {
   blogWriteSchema,
   galleryWriteSchema,
   heroSlideWriteSchema,
+  socialLinkWriteSchema,
 } from '@/lib/validation/catalogue-admin.schema';
 import {
   deleteCatalogueItem,
@@ -41,6 +42,7 @@ const WRITE_SCHEMAS = {
   blogs: blogWriteSchema,
   gallery: galleryWriteSchema,
   'hero-slides': heroSlideWriteSchema,
+  'social-links': socialLinkWriteSchema,
 } as const;
 
 async function resolveParams(context: Context) {

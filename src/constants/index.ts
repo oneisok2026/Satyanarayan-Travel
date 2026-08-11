@@ -98,6 +98,32 @@ export const UPLOAD_FOLDERS = [
 
 export type UploadFolder = (typeof UPLOAD_FOLDERS)[number];
 
+/**
+ * Social platforms the header can render.
+ *
+ * A closed list because the value selects a built-in icon: it is never used
+ * to build markup, so an admin cannot introduce arbitrary SVG through it.
+ */
+export const SOCIAL_PLATFORMS = [
+  'facebook',
+  'instagram',
+  'x',
+  'youtube',
+  'linkedin',
+  'google',
+] as const;
+
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+
+export const SOCIAL_PLATFORM_LABELS: Record<SocialPlatform, string> = {
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  x: 'X',
+  youtube: 'YouTube',
+  linkedin: 'LinkedIn',
+  google: 'Google',
+};
+
 /** Rate limits per window, keyed by logical bucket. */
 export const RATE_LIMITS = {
   enquiry: { limit: 5, windowMs: 10 * 60 * 1000 },

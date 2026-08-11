@@ -2,9 +2,14 @@ import Link from 'next/link';
 import { clientEnv } from '@/lib/env';
 import { FOOTER_NAV, CONTACT } from '@/constants/navigation';
 import { Logo } from './Logo';
+import { SocialIcons, type SocialLinkItem } from './SocialIcons';
 
 /** Server Component — static content, no client JS shipped. */
-export function Footer() {
+export function Footer({
+  socialLinks = [],
+}: {
+  socialLinks?: SocialLinkItem[];
+}) {
   const year = new Date().getFullYear();
 
   return (
@@ -44,15 +49,24 @@ export function Footer() {
 
           <FooterColumn title="Explore" links={FOOTER_NAV.explore} />
           <FooterColumn title="Services" links={FOOTER_NAV.services} />
-          <FooterColumn title="Company" links={FOOTER_NAV.company} />
+
+          <div>
+            <FooterColumn title="Company" links={FOOTER_NAV.company} />
+
+            {socialLinks.length > 0 && (
+              <div className="mt-8">
+                <h2 className="mb-3 font-display text-sm font-semibold tracking-wide text-white uppercase">
+                  Follow us
+                </h2>
+                <SocialIcons links={socialLinks} />
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 border-t border-white/10 pt-6">
           <p className="text-xs text-sand-500">
             © {year} {clientEnv.NEXT_PUBLIC_SITE_NAME}. All rights reserved.
-          </p>
-          <p className="text-xs text-sand-500">
-            Tour packages are subject to availability and confirmation.
           </p>
         </div>
       </div>

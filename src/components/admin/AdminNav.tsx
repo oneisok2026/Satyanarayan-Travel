@@ -55,6 +55,7 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
     title: 'Content',
     links: [
       { href: '/admin/hero-slides', label: 'Hero slides' },
+      { href: '/admin/social-links', label: 'Social links' },
       { href: '/admin/blogs', label: 'Blog' },
       { href: '/admin/gallery', label: 'Gallery' },
       { href: '/admin/reviews', label: 'Reviews' },
