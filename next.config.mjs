@@ -26,8 +26,16 @@ const securityHeaders = [
  * and never compiles, because it cannot clear the stale output. `npm run
  * clean` detects that and sets NEXT_DIST_DIR to a fresh directory so work
  * can continue without closing the editor or rebooting.
+ *
+ * That override is strictly a local escape hatch. Hosts look for `.next` by
+ * name, so honouring the variable on a deployment makes the build write
+ * somewhere the platform never checks and fail with "output directory not
+ * found". It is therefore ignored anywhere CI is set — which Vercel, GitHub
+ * Actions and every other runner define — so a stray project-level variable
+ * cannot break a deploy again.
  */
-const distDir = process.env.NEXT_DIST_DIR || '.next';
+const isCI = Boolean(process.env.CI || process.env.VERCEL);
+const distDir = (!isCI && process.env.NEXT_DIST_DIR) || '.next';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
