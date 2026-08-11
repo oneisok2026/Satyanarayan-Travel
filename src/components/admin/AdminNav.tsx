@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { SignOutButton } from '@/components/auth/SignOutButton';
 import type { UserRole } from '@/constants';
 
 interface NavLink {
@@ -12,6 +11,12 @@ interface NavLink {
   label: string;
   exact?: boolean;
   superAdminOnly?: boolean;
+  /**
+   * Marks a link that filters a listing by query string. Sibling links share
+   * a pathname, so the `type` parameter is what distinguishes them and the
+   * unfiltered entry is the one that matches when `type` is absent.
+   */
+  type?: string;
 }
 
 const GROUPS: { title: string; links: NavLink[] }[] = [
@@ -30,7 +35,17 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
   {
     title: 'Catalogue',
     links: [
-      { href: '/admin/packages', label: 'Packages' },
+      { href: '/admin/packages', label: 'All packages', exact: true },
+      {
+        href: '/admin/packages?type=domestic',
+        label: 'Domestic tours',
+        type: 'domestic',
+      },
+      {
+        href: '/admin/packages?type=international',
+        label: 'International tours',
+        type: 'international',
+      },
       { href: '/admin/destinations', label: 'Destinations' },
       { href: '/admin/categories', label: 'Categories' },
       { href: '/admin/services', label: 'Services' },
@@ -56,6 +71,18 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
 ];
 
 /**
+ * True when a link belongs to a set of siblings that filter one listing by
+ * query string, so active state must consider the parameter and not just the
+ * pathname. The unfiltered entry has no `type` of its own, hence the check
+ * across the group rather than on the link alone.
+ */
+function isFiltered(link: NavLink, group: NavLink[]): boolean {
+  if (link.type !== undefined) return true;
+  const path = link.href.split('?')[0];
+  return group.some((other) => other.type !== undefined && other.href.startsWith(`${path}?`));
+}
+
+/**
  * Admin sidebar: fixed on desktop, a slide-in drawer below lg.
  *
  * Hiding a link is presentation only. Every admin route and API re-verifies
@@ -63,10 +90,13 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
  */
 export function AdminNav({ role }: { role: UserRole }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentType = searchParams.get('type');
   const [open, setOpen] = useState(false);
 
-  // Close the drawer whenever navigation occurs.
-  useEffect(() => setOpen(false), [pathname]);
+  // Close the drawer whenever navigation occurs. The query string is part of
+  // this: the filtered package links differ only by their `type` parameter.
+  useEffect(() => setOpen(false), [pathname, currentType]);
 
   useEffect(() => {
     if (!open) return;
@@ -84,13 +114,6 @@ export function AdminNav({ role }: { role: UserRole }) {
 
   const content = (
     <div className="flex h-full flex-col p-4">
-      <Link
-        href="/"
-        className="mb-6 block font-display text-lg font-semibold text-brand-800"
-      >
-        Admin
-      </Link>
-
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto">
         {GROUPS.map((group) => {
           const links = group.links.filter(
@@ -105,9 +128,19 @@ export function AdminNav({ role }: { role: UserRole }) {
               </p>
               <ul className="flex flex-col gap-0.5">
                 {links.map((link) => {
-                  const active = link.exact
-                    ? pathname === link.href
-                    : pathname.startsWith(link.href);
+                  const path = link.href.split('?')[0] as string;
+                  let active: boolean;
+
+                  if (isFiltered(link, links)) {
+                    // Query-filtered siblings share a pathname, so the `type`
+                    // parameter decides which is current. The unfiltered entry
+                    // is active only when no type is applied.
+                    active = pathname === path && currentType === (link.type ?? null);
+                  } else if (link.exact) {
+                    active = pathname === path;
+                  } else {
+                    active = pathname.startsWith(path);
+                  }
 
                   return (
                     <li key={link.href}>
@@ -133,20 +166,25 @@ export function AdminNav({ role }: { role: UserRole }) {
       </div>
 
       <div className="mt-6 border-t border-sand-200 pt-4">
-        <SignOutButton />
+        <Link
+          href="/"
+          className="block rounded-lg px-3 py-2 text-sm text-sand-600 transition-colors hover:bg-sand-50 hover:text-sand-900"
+        >
+          View site
+        </Link>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Mobile trigger, in the flow above the page content */}
+      {/* Mobile trigger, sitting inside the topbar row on the left */}
       <button
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open admin menu"
         aria-expanded={open}
-        className="fixed top-4 left-4 z-30 grid size-10 place-items-center rounded-lg bg-white text-sand-800 shadow-[--shadow-card] ring-1 ring-sand-200 lg:hidden"
+        className="fixed top-2 left-3 z-40 grid size-10 place-items-center rounded-lg text-sand-800 transition-colors hover:bg-sand-100 lg:hidden"
       >
         <svg
           className="size-5"
@@ -166,7 +204,10 @@ export function AdminNav({ role }: { role: UserRole }) {
         aria-label="Admin"
         className="hidden w-60 shrink-0 border-r border-sand-200 bg-white lg:block"
       >
-        <div className="sticky top-0 max-h-dvh">{content}</div>
+        {/* Offset by the topbar height so the nav pins below it, not under it. */}
+        <div className="sticky top-14 max-h-[calc(100dvh-3.5rem)] overflow-y-auto">
+          {content}
+        </div>
       </nav>
 
       {/* Mobile drawer */}

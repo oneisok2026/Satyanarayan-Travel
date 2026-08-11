@@ -1,5 +1,6 @@
 import { requireAdminPage } from '@/lib/firebase/auth';
 import { AdminNav } from '@/components/admin/AdminNav';
+import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { ToastProvider } from '@/components/ui/Toast';
 
 /**
@@ -16,13 +17,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <ToastProvider>
-      <div className="min-h-dvh bg-sand-100">
-        <div className="flex">
+      <div className="flex min-h-dvh flex-col bg-sand-100">
+        <AdminTopbar email={user.email} />
+
+        <div className="flex flex-1">
           <AdminNav role={user.role} />
-          <main
-            id="main-content"
-            className="min-w-0 flex-1 p-5 pt-16 lg:p-8 lg:pt-8"
-          >
+          <main id="main-content" className="min-w-0 flex-1 p-5 lg:p-8">
             {children}
           </main>
         </div>
