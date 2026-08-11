@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import { Button } from '@/components/ui/Button';
-import { Input, Checkbox } from '@/components/ui/Field';
+import { Input, PasswordInput, Checkbox } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
 import { GoogleButton } from './GoogleButton';
 
@@ -125,9 +125,8 @@ export function RegisterForm({ redirectTo }: { redirectTo?: string }) {
           description="Optional — helps us reach you about enquiries."
         />
 
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           name="password"
           autoComplete="new-password"
           required
@@ -137,9 +136,8 @@ export function RegisterForm({ redirectTo }: { redirectTo?: string }) {
           description={`At least ${MIN_PASSWORD_LENGTH} characters.`}
         />
 
-        <Input
+        <PasswordInput
           label="Confirm password"
-          type="password"
           name="confirmPassword"
           autoComplete="new-password"
           required

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from './AuthProvider';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Field';
+import { Input, PasswordInput } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
 import { ADMIN_ROLES } from '@/constants';
 import { GoogleButton } from './GoogleButton';
@@ -64,9 +64,8 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         />
 
         <div className="flex flex-col gap-1.5">
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             name="password"
             autoComplete="current-password"
             required

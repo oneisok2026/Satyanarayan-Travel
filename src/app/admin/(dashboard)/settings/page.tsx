@@ -3,6 +3,7 @@ import { requireAdminPage } from '@/lib/firebase/auth';
 import { connectToDatabase } from '@/lib/db/connect';
 import { SiteSetting } from '@/models/SiteSetting';
 import { PageHeading } from '@/components/admin/PageHeading';
+import { ChangePasswordCard } from '@/components/admin/ChangePasswordCard';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
@@ -25,7 +26,7 @@ interface SettingRow {
 }
 
 export default async function AdminSettingsPage() {
-  await requireAdminPage('/admin/settings');
+  const admin = await requireAdminPage('/admin/settings');
 
   await connectToDatabase();
 
@@ -86,6 +87,10 @@ export default async function AdminSettingsPage() {
         title="Settings"
         description="Site-wide values used across the public website."
       />
+
+      <div className="mb-6">
+        <ChangePasswordCard email={admin.email} />
+      </div>
 
       <Alert variant="info" className="mb-6" title="Editing settings">
         These values are seeded and read by the site. Editing them from this

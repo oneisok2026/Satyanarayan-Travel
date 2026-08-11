@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Field';
+import { Input, PasswordInput } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
 import { ADMIN_ROLES } from '@/constants';
 
@@ -141,9 +141,8 @@ export function AdminLoginForm({
         placeholder="you@example.com"
       />
 
-      <Input
+      <PasswordInput
         label="Password"
-        type="password"
         name="password"
         autoComplete="current-password"
         required

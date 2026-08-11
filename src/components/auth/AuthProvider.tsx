@@ -12,13 +12,16 @@ import {
 } from 'react';
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   onAuthStateChanged,
   onIdTokenChanged,
+  reauthenticateWithCredential,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
+  updatePassword,
   updateProfile,
   type User as FirebaseUser,
 } from 'firebase/auth';
@@ -61,6 +64,8 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  /** Changes the signed-in user's password, proving the current one first. */
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   /** Re-reads the MongoDB user, e.g. after a profile update. */
   refreshUser: () => Promise<void>;
 }
@@ -274,6 +279,43 @@ export function AuthProvider({
     }
   }, []);
 
+  /**
+   * Changes the password of the signed-in user.
+   *
+   * Reauthenticates with the current password first. Firebase requires a
+   * recent login for this operation anyway, but doing it explicitly means the
+   * current password is *proved* rather than assumed — someone who walks up to
+   * an unlocked, already-signed-in browser cannot take over the account.
+   *
+   * The application never stores or transmits the credential itself: both
+   * calls go straight to Firebase from the browser.
+   */
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      const current = getFirebaseAuth().currentUser;
+      if (!current?.email) {
+        throw new Error('You need to be signed in to do that.');
+      }
+
+      try {
+        await reauthenticateWithCredential(
+          current,
+          EmailAuthProvider.credential(current.email, currentPassword),
+        );
+        await updatePassword(current, newPassword);
+
+        // A password change invalidates the existing session cookie's basis,
+        // so exchange a fresh ID token for a new cookie. Without this the
+        // admin stays signed in client-side while server requests start
+        // failing on the stale session.
+        await establishSession(current);
+      } catch (error) {
+        throw new Error(mapAuthError(error));
+      }
+    },
+    [establishSession],
+  );
+
   const refreshUser = useCallback(async () => {
     try {
       const response = await fetch('/api/users/me', { credentials: 'same-origin' });
@@ -297,6 +339,7 @@ export function AuthProvider({
       signOut,
       sendVerificationEmail,
       resetPassword,
+      changePassword,
       refreshUser,
     }),
     [
@@ -309,6 +352,7 @@ export function AuthProvider({
       signOut,
       sendVerificationEmail,
       resetPassword,
+      changePassword,
       refreshUser,
     ],
   );
