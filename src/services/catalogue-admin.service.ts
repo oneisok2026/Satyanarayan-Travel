@@ -11,6 +11,7 @@ import { GalleryItem } from '@/models/GalleryItem';
 import { Booking } from '@/models/Booking';
 import { toObjectId } from '@/lib/security/sanitize';
 import { conflict, notFound } from '@/lib/errors';
+import { deleteObject, objectPathFromUrl } from '@/lib/firebase/storage';
 import type { ContentStatus } from '@/constants';
 
 /**
@@ -279,8 +280,20 @@ export async function deleteCatalogueItem(
 
   await modelFor(resource).deleteOne({ _id: objectId });
 
+  // A gallery item exists only for its image, so removing the record without
+  // the file would leave an unreachable object paying for storage forever.
+  // Best-effort and after the delete: an orphaned file is far better than a
+  // failed deletion the admin has to retry.
+  if (resource === 'gallery') {
+    const image = document.image as { url?: string } | undefined;
+    if (image?.url) {
+      const path = objectPathFromUrl(image.url);
+      if (path) await deleteObject(path);
+    }
+  }
+
   return {
-    title: String(document.title ?? document.name ?? ''),
+    title: String(document.title ?? document.name ?? document.caption ?? ''),
     slug: String(document.slug ?? ''),
   };
 }

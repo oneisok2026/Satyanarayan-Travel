@@ -8,6 +8,7 @@ import { GalleryItem } from '@/models/GalleryItem';
 import { paginationSchema, offsetFor } from '@/lib/validation/common.schema';
 import { PageHeading } from '@/components/admin/PageHeading';
 import { NewItemButton } from '@/components/admin/NewItemButton';
+import { GalleryItemActions } from '@/components/admin/GalleryItemActions';
 import { StatusBadge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
@@ -130,6 +131,15 @@ export default async function AdminGalleryPage({
                   </span>
                   <StatusBadge.Content status={item.status} />
                 </div>
+
+                {admin.role === 'super_admin' && (
+                  <div className="mt-1 border-t border-sand-100 pt-1.5">
+                    <GalleryItemActions
+                      id={String(item._id)}
+                      label={item.caption || item.album}
+                    />
+                  </div>
+                )}
               </div>
             </li>
           ))}
