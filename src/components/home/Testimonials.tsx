@@ -1,6 +1,7 @@
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { Rating } from '@/components/ui/Rating';
+import { cn } from '@/lib/utils';
 import type { ReviewDTO } from '@/types';
 
 /**
@@ -25,7 +26,15 @@ export function Testimonials({ reviews }: { reviews: ReviewDTO[] }) {
       <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {reviews.slice(0, 6).map((review, index) => (
           <ScrollReveal key={review.id} delay={index * 60}>
-            <figure className="flex h-full flex-col rounded-2xl bg-white p-6 shadow-[--shadow-card]">
+            <figure
+              className={cn(
+                'flex h-full flex-col rounded-2xl bg-white p-6 shadow-[--shadow-card]',
+                'ring-1 ring-accent-600/25 transition-[box-shadow,transform] duration-300',
+                'ease-[cubic-bezier(0.22,1,0.36,1)]',
+                'hover:-translate-y-1 hover:shadow-[--shadow-card-hover] hover:ring-accent-600/60',
+                'motion-reduce:transform-none motion-reduce:transition-none',
+              )}
+            >
               <Rating value={review.rating} size="sm" />
 
               {review.title && (

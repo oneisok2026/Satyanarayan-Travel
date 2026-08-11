@@ -1,5 +1,6 @@
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { cn } from '@/lib/utils';
 
 const REASONS = [
   {
@@ -47,7 +48,15 @@ export function WhyChooseUs() {
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {REASONS.map((reason, index) => (
           <ScrollReveal key={reason.title} delay={index * 60}>
-            <div className="flex h-full flex-col rounded-2xl bg-sand-50 p-6 ring-1 ring-sand-200/70">
+            <div
+              className={cn(
+                'flex h-full flex-col rounded-2xl bg-sand-50 p-6',
+                'ring-1 ring-accent-600/25 transition-[box-shadow,transform] duration-300',
+                'ease-[cubic-bezier(0.22,1,0.36,1)]',
+                'hover:-translate-y-1 hover:shadow-[--shadow-card] hover:ring-accent-600/60',
+                'motion-reduce:transform-none motion-reduce:transition-none',
+              )}
+            >
               <span
                 aria-hidden="true"
                 className="grid size-11 place-items-center rounded-xl bg-brand-700 text-white"
