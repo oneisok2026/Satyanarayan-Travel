@@ -6,6 +6,7 @@ import { Destination } from '@/models/Destination';
 import { paginationSchema, offsetFor } from '@/lib/validation/common.schema';
 import { buildSearchRegex } from '@/lib/security/sanitize';
 import { PageHeading } from '@/components/admin/PageHeading';
+import { NewItemButton } from '@/components/admin/NewItemButton';
 import { SearchFilters } from '@/components/ui/SearchFilters';
 import { CatalogueTable, type CatalogueRow } from '@/components/admin/CatalogueTable';
 import { CONTENT_STATUSES, PACKAGE_TYPES } from '@/constants';
@@ -71,6 +72,11 @@ export default async function AdminDestinationsPage({
       <PageHeading
         title="Destinations"
         description={`${total} ${total === 1 ? 'destination' : 'destinations'} in the catalogue.`}
+        action={
+          admin.role === 'super_admin' ? (
+            <NewItemButton href="/admin/destinations/new" label="New destination" />
+          ) : undefined
+        }
       />
 
       <SearchFilters

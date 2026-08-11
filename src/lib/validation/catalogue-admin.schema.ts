@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CONTENT_STATUSES, PACKAGE_TYPES } from '@/constants';
 import { objectIdSchema, slugSchema } from './common.schema';
+import { slugify } from '@/lib/utils';
 
 /**
  * Admin write schemas for the catalogue.
@@ -173,6 +174,25 @@ export const blogWriteSchema = z
     seo: seoSchema,
   })
   .strict();
+
+// --------------------------------------------------------------- gallery --
+
+/**
+ * Gallery items are keyed by album rather than a slug of their own, so
+ * `albumSlug` is derived from the album name here instead of being accepted
+ * from the client — two admins typing "Kedarnath 2026" must land in the same
+ * album regardless of spacing or case.
+ */
+export const galleryWriteSchema = z
+  .object({
+    album: z.string().trim().min(2).max(140),
+    image: imageSchema,
+    caption: z.string().trim().max(300).optional().or(z.literal('')),
+    sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
+    status: z.enum(CONTENT_STATUSES).default('published'),
+  })
+  .strict()
+  .transform((value) => ({ ...value, albumSlug: slugify(value.album) }));
 
 export type PackageWriteInput = z.infer<typeof packageWriteSchema>;
 export type DestinationWriteInput = z.infer<typeof destinationWriteSchema>;

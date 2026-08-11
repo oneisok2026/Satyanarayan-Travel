@@ -6,6 +6,7 @@ import { Category } from '@/models/Category';
 import { paginationSchema, offsetFor } from '@/lib/validation/common.schema';
 import { buildSearchRegex } from '@/lib/security/sanitize';
 import { PageHeading } from '@/components/admin/PageHeading';
+import { NewItemButton } from '@/components/admin/NewItemButton';
 import { SearchFilters } from '@/components/ui/SearchFilters';
 import { CatalogueTable, type CatalogueRow } from '@/components/admin/CatalogueTable';
 import { CONTENT_STATUSES } from '@/constants';
@@ -64,7 +65,12 @@ export default async function AdminCategorysPage({
     <>
       <PageHeading
         title="Categories"
-        description={`${total} ${total === 1 ? 'category' : 'categorys'} in the catalogue.`}
+        description={`${total} ${total === 1 ? 'category' : 'categories'} in the catalogue.`}
+        action={
+          admin.role === 'super_admin' ? (
+            <NewItemButton href="/admin/categories/new" label="New category" />
+          ) : undefined
+        }
       />
 
       <SearchFilters

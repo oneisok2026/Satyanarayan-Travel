@@ -11,6 +11,7 @@ import {
   categoryWriteSchema,
   serviceWriteSchema,
   blogWriteSchema,
+  galleryWriteSchema,
 } from '@/lib/validation/catalogue-admin.schema';
 import {
   deleteCatalogueItem,
@@ -30,13 +31,14 @@ export const dynamic = 'force-dynamic';
 
 type Context = { params: Promise<{ resource: string; id: string }> };
 
-/** Write schema per resource. Gallery has no full editor yet. */
+/** Write schema per resource. */
 const WRITE_SCHEMAS = {
   packages: packageWriteSchema,
   destinations: destinationWriteSchema,
   categories: categoryWriteSchema,
   services: serviceWriteSchema,
   blogs: blogWriteSchema,
+  gallery: galleryWriteSchema,
 } as const;
 
 async function resolveParams(context: Context) {

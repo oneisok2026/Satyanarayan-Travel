@@ -8,6 +8,7 @@ import {
   categoryWriteSchema,
   serviceWriteSchema,
   blogWriteSchema,
+  galleryWriteSchema,
 } from '@/lib/validation/catalogue-admin.schema';
 import {
   createCatalogueItem,
@@ -28,6 +29,7 @@ const WRITE_SCHEMAS = {
   categories: categoryWriteSchema,
   services: serviceWriteSchema,
   blogs: blogWriteSchema,
+  gallery: galleryWriteSchema,
 } as const;
 
 /** POST — create a catalogue entry. super_admin only. */

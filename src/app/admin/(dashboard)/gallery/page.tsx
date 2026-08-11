@@ -7,6 +7,7 @@ import { connectToDatabase } from '@/lib/db/connect';
 import { GalleryItem } from '@/models/GalleryItem';
 import { paginationSchema, offsetFor } from '@/lib/validation/common.schema';
 import { PageHeading } from '@/components/admin/PageHeading';
+import { NewItemButton } from '@/components/admin/NewItemButton';
 import { StatusBadge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
@@ -28,7 +29,7 @@ export default async function AdminGalleryPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage('/admin/gallery');
+  const admin = await requireAdminPage('/admin/gallery');
 
   const raw = await searchParams;
   const parsed = querySchema.safeParse(raw);
@@ -55,6 +56,11 @@ export default async function AdminGalleryPage({
       <PageHeading
         title="Gallery"
         description={`${total} ${total === 1 ? 'image' : 'images'} across ${albums.length} ${albums.length === 1 ? 'album' : 'albums'}.`}
+        action={
+          admin.role === 'super_admin' ? (
+            <NewItemButton href="/admin/gallery/new" label="New image" />
+          ) : undefined
+        }
       />
 
       {albums.length > 0 && (

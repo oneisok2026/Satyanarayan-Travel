@@ -5,6 +5,7 @@ import { TourPackage } from '@/models/TourPackage';
 import { paginationSchema, offsetFor } from '@/lib/validation/common.schema';
 import { buildSearchRegex } from '@/lib/security/sanitize';
 import { PageHeading } from '@/components/admin/PageHeading';
+import { NewItemButton } from '@/components/admin/NewItemButton';
 import { SearchFilters } from '@/components/ui/SearchFilters';
 import { CatalogueTable, type CatalogueRow } from '@/components/admin/CatalogueTable';
 import { formatPrice, formatDuration } from '@/lib/utils';
@@ -70,8 +71,28 @@ export default async function AdminPackagesPage({
   return (
     <>
       <PageHeading
-        title="Packages"
-        description={`${total} ${total === 1 ? 'package' : 'packages'} in the catalogue.`}
+        title={
+          query.type === 'domestic'
+            ? 'Domestic tours'
+            : query.type === 'international'
+              ? 'International tours'
+              : 'Packages'
+        }
+        description={
+          query.type
+            ? `${total} ${total === 1 ? 'package' : 'packages'} of this type.`
+            : `${total} ${total === 1 ? 'package' : 'packages'} in the catalogue.`
+        }
+        action={
+          admin.role === 'super_admin' ? (
+            <NewItemButton
+              href={
+                query.type ? `/admin/packages/new?type=${query.type}` : '/admin/packages/new'
+              }
+              label="New package"
+            />
+          ) : undefined
+        }
       />
 
       <SearchFilters

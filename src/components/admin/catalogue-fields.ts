@@ -336,10 +336,47 @@ export const BLOG_FIELDS: FormSection[] = [
   seoSection,
 ];
 
+export const GALLERY_FIELDS: FormSection[] = [
+  {
+    title: 'Image',
+    fields: [
+      {
+        name: 'imageUrl',
+        path: 'image.url',
+        label: 'Image',
+        kind: 'image',
+        required: true,
+        uploadFolder: 'gallery',
+        description: 'Upload from your device, or paste a link.',
+        wide: true,
+      },
+      {
+        name: 'imageAlt',
+        path: 'image.alt',
+        label: 'Alt text',
+        kind: 'text',
+        description: 'Describes the image for screen readers and search engines.',
+        wide: true,
+      },
+      {
+        name: 'album',
+        label: 'Album',
+        kind: 'text',
+        required: true,
+        description: 'Images with the same album name are grouped together.',
+      },
+      { name: 'caption', label: 'Caption', kind: 'text' },
+      { name: 'sortOrder', label: 'Sort order', kind: 'number', min: 0 },
+      { name: 'status', label: 'Status', kind: 'select', options: statusOptions, required: true },
+    ],
+  },
+];
+
 export const FIELDS_BY_RESOURCE = {
   packages: PACKAGE_FIELDS,
   destinations: DESTINATION_FIELDS,
   categories: CATEGORY_FIELDS,
   services: SERVICE_FIELDS,
   blogs: BLOG_FIELDS,
+  gallery: GALLERY_FIELDS,
 } as const;

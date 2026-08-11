@@ -6,6 +6,7 @@ import { BlogPost } from '@/models/BlogPost';
 import { paginationSchema, offsetFor } from '@/lib/validation/common.schema';
 import { buildSearchRegex } from '@/lib/security/sanitize';
 import { PageHeading } from '@/components/admin/PageHeading';
+import { NewItemButton } from '@/components/admin/NewItemButton';
 import { SearchFilters } from '@/components/ui/SearchFilters';
 import { CatalogueTable, type CatalogueRow } from '@/components/admin/CatalogueTable';
 import { CONTENT_STATUSES } from '@/constants';
@@ -69,6 +70,11 @@ export default async function AdminBlogPostsPage({
       <PageHeading
         title="Blog posts"
         description={`${total} ${total === 1 ? 'post' : 'posts'} in the catalogue.`}
+        action={
+          admin.role === 'super_admin' ? (
+            <NewItemButton href="/admin/blogs/new" label="New article" />
+          ) : undefined
+        }
       />
 
       <SearchFilters
