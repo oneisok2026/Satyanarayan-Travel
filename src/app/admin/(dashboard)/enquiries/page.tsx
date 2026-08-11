@@ -7,6 +7,7 @@ import { SearchFilters } from '@/components/ui/SearchFilters';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { Pagination } from '@/components/ui/Pagination';
 import { EnquiryStatusSelect } from '@/components/admin/EnquiryStatusSelect';
+import { EnquiryViewButton } from '@/components/admin/EnquiryViewButton';
 import { formatDate } from '@/lib/utils';
 import { ENQUIRY_STATUSES, ENQUIRY_TYPES } from '@/constants';
 import type { EnquiryDTO } from '@/types';
@@ -101,7 +102,10 @@ export default async function AdminEnquiriesPage({
       header: 'Status',
       align: 'right',
       render: (enquiry) => (
-        <EnquiryStatusSelect enquiryId={enquiry.id} status={enquiry.status} />
+        <div className="flex items-center justify-end gap-2">
+          <EnquiryViewButton enquiry={enquiry} />
+          <EnquiryStatusSelect enquiryId={enquiry.id} status={enquiry.status} />
+        </div>
       ),
     },
   ];
