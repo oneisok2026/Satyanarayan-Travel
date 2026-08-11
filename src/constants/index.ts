@@ -92,6 +92,7 @@ export const UPLOAD_FOLDERS = [
   'services',
   'categories',
   'gallery',
+  'hero-slides',
   'settings',
 ] as const;
 

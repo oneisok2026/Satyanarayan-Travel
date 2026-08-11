@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { ButtonLink } from '@/components/ui/Button';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 
 const BACKDROP =
   'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1800&q=70';
@@ -21,6 +22,8 @@ export function CtaBand() {
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-950/90 to-brand-900/70"
       />
+
+      <AmbientBackground className="-z-10" onDark />
 
       <div className="container-page py-16 lg:py-20">
         <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-center lg:justify-between">

@@ -372,6 +372,95 @@ export const GALLERY_FIELDS: FormSection[] = [
   },
 ];
 
+export const HERO_SLIDE_FIELDS: FormSection[] = [
+  {
+    title: 'Image',
+    fields: [
+      {
+        name: 'imageUrl',
+        path: 'image.url',
+        label: 'Background image',
+        kind: 'image',
+        required: true,
+        uploadFolder: 'hero-slides',
+        description: 'Wide, landscape photographs work best. Upload or paste a link.',
+        wide: true,
+      },
+      {
+        name: 'imageAlt',
+        path: 'image.alt',
+        label: 'Alt text',
+        kind: 'text',
+        description: 'Describes the image for screen readers and search engines.',
+        wide: true,
+      },
+    ],
+  },
+  {
+    title: 'Text',
+    description: 'Shown centred over the image, and changes as the slide changes.',
+    fields: [
+      {
+        name: 'eyebrow',
+        label: 'Eyebrow',
+        kind: 'text',
+        placeholder: 'Handcrafted journeys since 2009',
+        description: 'Small label above the headline. Optional.',
+        wide: true,
+      },
+      { name: 'headline', label: 'Headline', kind: 'text', required: true, wide: true },
+      {
+        name: 'headlineAccent',
+        label: 'Headline (accent line)',
+        kind: 'text',
+        description: 'Optional second line, shown in the accent colour.',
+        wide: true,
+      },
+      {
+        name: 'subheadline',
+        label: 'Subheadline',
+        kind: 'textarea',
+        rows: 3,
+        description: 'One or two sentences under the headline. Optional.',
+        wide: true,
+      },
+    ],
+  },
+  {
+    title: 'Buttons',
+    description: 'Each button needs both a label and a link, or leave both blank.',
+    fields: [
+      { name: 'ctaLabel', label: 'Primary button label', kind: 'text' },
+      {
+        name: 'ctaHref',
+        label: 'Primary button link',
+        kind: 'text',
+        placeholder: '/tours',
+      },
+      { name: 'secondaryCtaLabel', label: 'Secondary button label', kind: 'text' },
+      {
+        name: 'secondaryCtaHref',
+        label: 'Secondary button link',
+        kind: 'text',
+        placeholder: '/contact',
+      },
+    ],
+  },
+  {
+    title: 'Visibility',
+    fields: [
+      { name: 'status', label: 'Status', kind: 'select', options: statusOptions, required: true },
+      {
+        name: 'sortOrder',
+        label: 'Sort order',
+        kind: 'number',
+        min: 0,
+        description: 'Lower numbers appear first.',
+      },
+    ],
+  },
+];
+
 export const FIELDS_BY_RESOURCE = {
   packages: PACKAGE_FIELDS,
   destinations: DESTINATION_FIELDS,
@@ -379,4 +468,5 @@ export const FIELDS_BY_RESOURCE = {
   services: SERVICE_FIELDS,
   blogs: BLOG_FIELDS,
   gallery: GALLERY_FIELDS,
+  'hero-slides': HERO_SLIDE_FIELDS,
 } as const;

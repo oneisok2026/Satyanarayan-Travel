@@ -19,6 +19,7 @@ import {
   listPublishedPosts,
   listGalleryItems,
   listApprovedReviews,
+  listHeroSlides,
 } from '@/services/content.service';
 
 export function generateMetadata(): Promise<Metadata> {
@@ -39,6 +40,7 @@ export default async function HomePage() {
     posts,
     gallery,
     reviews,
+    heroSlides,
   ] = await Promise.all([
     getFeaturedDestinations(8),
     listPublishedPackages({ featured: true, page: 1, limit: 6 }),
@@ -48,11 +50,13 @@ export default async function HomePage() {
     listPublishedPosts({ page: 1, limit: 3 }),
     listGalleryItems(undefined, 1, 8),
     listApprovedReviews(undefined, 1, 6),
+    listHeroSlides(),
   ]);
+
 
   return (
     <>
-      <Hero />
+      <Hero slides={heroSlides} />
 
       {destinations.length > 0 && (
         <Section aria-labelledby="destinations-heading">

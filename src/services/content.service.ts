@@ -4,6 +4,7 @@ import type { FilterQuery } from 'mongoose';
 import { connectToDatabase } from '@/lib/db/connect';
 import { BlogPost, type BlogPostAttributes } from '@/models/BlogPost';
 import { GalleryItem } from '@/models/GalleryItem';
+import { HeroSlide } from '@/models/HeroSlide';
 import { Service } from '@/models/Service';
 import { Review } from '@/models/Review';
 import { TourPackage } from '@/models/TourPackage';
@@ -298,4 +299,49 @@ export async function listUserReviews(userId: string): Promise<ReviewDTO[]> {
     .lean();
 
   return documents.map(toReviewDTO);
+}
+
+/**
+ * Published homepage hero slides, in display order.
+ *
+ * Returns a plain shape rather than the Mongoose document: the slider is a
+ * Client Component, and ObjectId/Date instances cannot cross that boundary.
+ */
+export async function listHeroSlides(): Promise<
+  {
+    id: string;
+    imageUrl: string;
+    imageAlt: string;
+    eyebrow?: string;
+    headline: string;
+    headlineAccent?: string;
+    subheadline?: string;
+    ctaLabel?: string;
+    ctaHref?: string;
+    secondaryCtaLabel?: string;
+    secondaryCtaHref?: string;
+  }[]
+> {
+  await connectToDatabase();
+
+  const documents = await HeroSlide.find({ status: 'published' })
+    .sort({ sortOrder: 1, createdAt: 1 })
+    // More than a handful and the rotation outlasts the time anyone spends
+    // above the fold.
+    .limit(6)
+    .lean();
+
+  return documents.map((document) => ({
+    id: String(document._id),
+    imageUrl: document.image.url,
+    imageAlt: document.image.alt || document.headline,
+    eyebrow: document.eyebrow || undefined,
+    headline: document.headline,
+    headlineAccent: document.headlineAccent || undefined,
+    subheadline: document.subheadline || undefined,
+    ctaLabel: document.ctaLabel || undefined,
+    ctaHref: document.ctaHref || undefined,
+    secondaryCtaLabel: document.secondaryCtaLabel || undefined,
+    secondaryCtaHref: document.secondaryCtaHref || undefined,
+  }));
 }

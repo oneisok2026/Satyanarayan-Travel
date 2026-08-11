@@ -39,6 +39,11 @@ export {
 } from './GalleryItem';
 export { Service, type ServiceAttributes, type ServiceDocument } from './Service';
 export {
+  HeroSlide,
+  type HeroSlideAttributes,
+  type HeroSlideDocument,
+} from './HeroSlide';
+export {
   SiteSetting,
   type SiteSettingAttributes,
   type SiteSettingDocument,

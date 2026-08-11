@@ -8,6 +8,7 @@ import { Category } from '@/models/Category';
 import { Service } from '@/models/Service';
 import { BlogPost } from '@/models/BlogPost';
 import { GalleryItem } from '@/models/GalleryItem';
+import { HeroSlide } from '@/models/HeroSlide';
 import { Booking } from '@/models/Booking';
 import { toObjectId } from '@/lib/security/sanitize';
 import { conflict, notFound } from '@/lib/errors';
@@ -29,6 +30,7 @@ export const CATALOGUE_RESOURCES = {
   services: { model: Service, label: 'Service', audit: 'service' },
   blogs: { model: BlogPost, label: 'Article', audit: 'blog' },
   gallery: { model: GalleryItem, label: 'Gallery item', audit: 'gallery' },
+  'hero-slides': { model: HeroSlide, label: 'Hero slide', audit: 'hero-slides' },
 } as const;
 
 export type CatalogueResource = keyof typeof CATALOGUE_RESOURCES;
@@ -284,7 +286,7 @@ export async function deleteCatalogueItem(
   // the file would leave an unreachable object paying for storage forever.
   // Best-effort and after the delete: an orphaned file is far better than a
   // failed deletion the admin has to retry.
-  if (resource === 'gallery') {
+  if (resource === 'gallery' || resource === 'hero-slides') {
     const image = document.image as { url?: string } | undefined;
     if (image?.url) {
       const path = objectPathFromUrl(image.url);
@@ -293,7 +295,9 @@ export async function deleteCatalogueItem(
   }
 
   return {
-    title: String(document.title ?? document.name ?? document.caption ?? ''),
+    title: String(
+      document.title ?? document.name ?? document.headline ?? document.caption ?? '',
+    ),
     slug: String(document.slug ?? ''),
   };
 }

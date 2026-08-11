@@ -32,6 +32,7 @@ async function main(): Promise<void> {
     GalleryItem,
     Service,
     SiteSetting,
+    HeroSlide,
   } = await import('../src/models/index');
 
   await mongoose.connect(process.env.MONGODB_URI as string, {
@@ -50,6 +51,7 @@ async function main(): Promise<void> {
       BlogPost.deleteMany({}),
       GalleryItem.deleteMany({}),
       Service.deleteMany({}),
+      HeroSlide.deleteMany({}),
     ]);
   }
 
@@ -801,6 +803,58 @@ async function main(): Promise<void> {
     );
   }
   console.log(`  gallery       ${gallery.length}`);
+
+  // --------------------------------------------------------- hero slides --
+  // The homepage falls back to a built-in hero when none are published, so
+  // these exist to make the rotation visible on a fresh database. They are
+  // ordinary records: edit or delete them from Content → Hero slides.
+  const heroSlides = [
+    {
+      image: IMG('1512343879784-a960bf40e7f2', 'Palm trees along a Goa beach at golden hour'),
+      eyebrow: 'Handcrafted journeys since 2009',
+      headline: 'Travel that feels',
+      headlineAccent: 'planned for you',
+      subheadline:
+        'Domestic and international tour packages built around how you actually want to travel — sensible routing, stays we have inspected, and a team you can reach while you are away.',
+      ctaLabel: 'Explore Packages',
+      ctaHref: '/tours',
+      secondaryCtaLabel: 'Plan a Custom Trip',
+      secondaryCtaHref: '/contact',
+    },
+    {
+      image: IMG('1512453979798-5ea266f8880c', 'Dubai skyline at dusk'),
+      eyebrow: 'International holidays',
+      headline: 'Dubai, Thailand,',
+      headlineAccent: 'Singapore and Bali',
+      subheadline:
+        'Visa guidance, airport transfers and hand-picked hotels arranged end to end — so the only thing you plan is what to pack.',
+      ctaLabel: 'International Tours',
+      ctaHref: '/tours/international',
+      secondaryCtaLabel: 'Talk to an Expert',
+      secondaryCtaHref: '/contact',
+    },
+    {
+      image: IMG('1602216056096-3b40cc0c9944', 'Houseboat on the Kerala backwaters'),
+      eyebrow: 'Across India',
+      headline: 'Kashmir to Kerala,',
+      headlineAccent: 'planned properly',
+      subheadline:
+        'Hills, beaches, backwaters and pilgrimage circuits — with day-wise itineraries and pricing you can check before you pay anything.',
+      ctaLabel: 'Domestic Tours',
+      ctaHref: '/tours/domestic',
+      secondaryCtaLabel: 'Browse Destinations',
+      secondaryCtaHref: '/destinations',
+    },
+  ];
+
+  for (const [index, slide] of heroSlides.entries()) {
+    await HeroSlide.updateOne(
+      { 'image.url': slide.image.url },
+      { $set: { ...slide, sortOrder: index, status: 'published' } },
+      { upsert: true },
+    );
+  }
+  console.log(`  hero slides   ${heroSlides.length}`);
 
   // ------------------------------------------------------------- settings --
   const settings = [

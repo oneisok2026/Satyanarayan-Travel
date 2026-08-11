@@ -194,6 +194,53 @@ export const galleryWriteSchema = z
   .strict()
   .transform((value) => ({ ...value, albumSlug: slugify(value.album) }));
 
+// ----------------------------------------------------------- hero slide --
+
+/**
+ * A call to action needs both halves to be usable, so a label without a link
+ * (or the reverse) is rejected rather than silently rendering a dead button.
+ */
+const internalPath = z
+  .string()
+  .trim()
+  .max(300)
+  .refine(
+    (value) => value === '' || value.startsWith('/') || /^https?:\/\//.test(value),
+    'Enter a path like /tours or a full https:// URL',
+  );
+
+export const heroSlideWriteSchema = z
+  .object({
+    image: imageSchema,
+    eyebrow: z.string().trim().max(80).optional().or(z.literal('')),
+    headline: z.string().trim().min(2, 'Enter a headline').max(120),
+    headlineAccent: z.string().trim().max(120).optional().or(z.literal('')),
+    subheadline: z.string().trim().max(400).optional().or(z.literal('')),
+    ctaLabel: z.string().trim().max(40).optional().or(z.literal('')),
+    ctaHref: internalPath.optional().or(z.literal('')),
+    secondaryCtaLabel: z.string().trim().max(40).optional().or(z.literal('')),
+    secondaryCtaHref: internalPath.optional().or(z.literal('')),
+    sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
+    status: z.enum(CONTENT_STATUSES).default('published'),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (Boolean(value.ctaLabel) !== Boolean(value.ctaHref)) {
+      context.addIssue({
+        code: 'custom',
+        path: [value.ctaLabel ? 'ctaHref' : 'ctaLabel'],
+        message: 'A button needs both a label and a link',
+      });
+    }
+    if (Boolean(value.secondaryCtaLabel) !== Boolean(value.secondaryCtaHref)) {
+      context.addIssue({
+        code: 'custom',
+        path: [value.secondaryCtaLabel ? 'secondaryCtaHref' : 'secondaryCtaLabel'],
+        message: 'A button needs both a label and a link',
+      });
+    }
+  });
+
 export type PackageWriteInput = z.infer<typeof packageWriteSchema>;
 export type DestinationWriteInput = z.infer<typeof destinationWriteSchema>;
 export type CategoryWriteInput = z.infer<typeof categoryWriteSchema>;

@@ -389,6 +389,45 @@
   }
 }
 
+/*
+ * Hero slide cross-fade. The outgoing slide stays mounted at opacity 0, so
+ * the two images overlap rather than flashing the scrim between them. The
+ * slow scale is the Ken Burns drift.
+ */
+@keyframes hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/*
+ * Ambient background drift. Two orbs on different durations so they never
+ * settle into a visible loop. Transform-only, so it stays off the main
+ * thread and cannot trigger layout.
+ */
+@keyframes orb-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4rem, -2.5rem, 0) scale(1.12);
+  }
+}
+
+@keyframes orb-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+  50% {
+    transform: translate3d(-3.5rem, 2rem, 0) scale(1);
+  }
+}
+
 @utility animate-fade-in {
   animation: fade-in 0.5s var(--ease-out-soft) both;
 }
@@ -407,6 +446,18 @@
 
 @utility animate-slide-in-right {
   animation: slide-in-right 0.3s var(--ease-out-soft) both;
+}
+
+@utility animate-hero-zoom {
+  animation: hero-zoom 9s var(--ease-out-soft) both;
+}
+
+@utility animate-orb-a {
+  animation: orb-drift-a 26s ease-in-out infinite;
+}
+
+@utility animate-orb-b {
+  animation: orb-drift-b 34s ease-in-out infinite;
 }
 
 /*
@@ -478,6 +529,18 @@
 
   .skeleton::after {
     animation: none;
+  }
+
+  /*
+   * The global rule above collapses these to 0.01ms, which would freeze the
+   * orbs and the hero zoom part-way through their drift. Removing the
+   * animation entirely leaves them at their natural resting position.
+   */
+  .animate-orb-a,
+  .animate-orb-b,
+  .animate-hero-zoom {
+    animation: none !important;
+    transform: none !important;
   }
 }
 
