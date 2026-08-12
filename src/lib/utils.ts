@@ -74,6 +74,50 @@ export function buildWhatsAppUrl(number: string, message?: string): string {
   return `https://wa.me/${digits}${text}`;
 }
 
+/**
+ * A mailto: link that opens the visitor's own mail client with the message
+ * already written, the email counterpart of buildWhatsAppUrl.
+ *
+ * encodeURIComponent, not encodeURI: the body carries newlines, ampersands
+ * and colons that would otherwise be read as mailto header separators and
+ * truncate the message.
+ */
+export function buildMailtoUrl(
+  address: string,
+  subject?: string,
+  body?: string,
+): string {
+  const params = [
+    subject ? `subject=${encodeURIComponent(subject)}` : '',
+    body ? `body=${encodeURIComponent(body)}` : '',
+  ].filter(Boolean);
+
+  return `mailto:${address.trim()}${params.length ? `?${params.join('&')}` : ''}`;
+}
+
+/**
+ * Gmail's web compose window, prefilled.
+ *
+ * Preferred over mailto: because a mailto: hand-off is resolved by the OS and
+ * lands in whatever desktop client is registered (Outlook on most Windows
+ * machines) rather than in the browser. This opens a compose tab instead, the
+ * browser-side counterpart of the wa.me link.
+ *
+ * `fs=1` forces the full compose view, and `tf=cm` selects compose mode; both
+ * are required for the /mail/u/0/ path to honour the prefilled fields.
+ */
+export function buildGmailComposeUrl(
+  address: string,
+  subject?: string,
+  body?: string,
+): string {
+  const params = new URLSearchParams({ fs: '1', tf: 'cm', to: address.trim() });
+  if (subject) params.set('su', subject);
+  if (body) params.set('body', body);
+
+  return `https://mail.google.com/mail/u/0/?${params.toString()}`;
+}
+
 /** Deterministic booking reference, e.g. STB-4F2K9A. */
 export function generateBookingReference(prefix = 'STB'): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no confusable chars

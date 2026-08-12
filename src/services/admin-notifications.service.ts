@@ -3,16 +3,15 @@ import 'server-only';
 import { connectToDatabase } from '@/lib/db/connect';
 import { Enquiry } from '@/models/Enquiry';
 import { Booking } from '@/models/Booking';
-import { Review } from '@/models/Review';
 
 /**
  * Admin notification feed.
  *
  * Derived from records that need attention rather than stored as its own
- * collection: an unanswered enquiry, an unconfirmed booking and an unmoderated
- * review are already represented by their status. Deriving them means the list
- * cannot drift out of sync with the records it describes, and acting on an
- * item clears it without a second write.
+ * collection: an unanswered enquiry and an unconfirmed booking are already
+ * represented by their status. Deriving them means the list cannot drift out
+ * of sync with the records it describes, and acting on an item clears it
+ * without a second write.
  *
  * The trade-off is that "read" state cannot be tracked per admin. That is
  * deliberate for now — the count reflects outstanding work, not unseen items.
@@ -20,7 +19,7 @@ import { Review } from '@/models/Review';
  * Distinct from notification.service.ts, which sends transactional email.
  */
 
-export type NotificationKind = 'enquiry' | 'booking' | 'review';
+export type NotificationKind = 'enquiry' | 'booking';
 
 export interface AdminNotification {
   id: string;
@@ -42,27 +41,25 @@ const PER_KIND_LIMIT = 8;
 export async function getAdminNotifications(limit = 12): Promise<NotificationFeed> {
   await connectToDatabase();
 
-  const [enquiries, bookings, reviews, enquiryCount, bookingCount, reviewCount] =
-    await Promise.all([
-      Enquiry.find({ status: 'new' })
-        .select('name type createdAt')
-        .sort({ createdAt: -1 })
-        .limit(PER_KIND_LIMIT)
-        .lean(),
-      Booking.find({ status: { $in: ['requested', 'pending_confirmation'] } })
-        .select('bookingReference contact createdAt')
-        .sort({ createdAt: -1 })
-        .limit(PER_KIND_LIMIT)
-        .lean(),
-      Review.find({ status: 'pending' })
-        .select('authorName rating createdAt')
-        .sort({ createdAt: -1 })
-        .limit(PER_KIND_LIMIT)
-        .lean(),
-      Enquiry.countDocuments({ status: 'new' }),
-      Booking.countDocuments({ status: { $in: ['requested', 'pending_confirmation'] } }),
-      Review.countDocuments({ status: 'pending' }),
-    ]);
+  // Unread rather than status:'new' — an admin who has read an enquiry but
+  // not yet phoned the customer should not keep being told about it, and
+  // marking it "contacted" just to clear the badge would misreport the work.
+  const unread = { readAt: { $exists: false } };
+
+  const [enquiries, bookings, enquiryCount, bookingCount] = await Promise.all([
+    Enquiry.find(unread)
+      .select('name type createdAt')
+      .sort({ createdAt: -1 })
+      .limit(PER_KIND_LIMIT)
+      .lean(),
+    Booking.find({ status: { $in: ['requested', 'pending_confirmation'] } })
+      .select('bookingReference contact createdAt')
+      .sort({ createdAt: -1 })
+      .limit(PER_KIND_LIMIT)
+      .lean(),
+    Enquiry.countDocuments(unread),
+    Booking.countDocuments({ status: { $in: ['requested', 'pending_confirmation'] } }),
+  ]);
 
   const items: AdminNotification[] = [
     ...enquiries.map((doc) => ({
@@ -81,21 +78,13 @@ export async function getAdminNotifications(limit = 12): Promise<NotificationFee
       href: '/admin/bookings',
       createdAt: doc.createdAt.toISOString(),
     })),
-    ...reviews.map((doc) => ({
-      id: `review-${doc._id}`,
-      kind: 'review' as const,
-      title: 'Review awaiting moderation',
-      detail: `${doc.authorName} left ${doc.rating}★`,
-      href: '/admin/reviews',
-      createdAt: doc.createdAt.toISOString(),
-    })),
   ];
 
-  // Newest first across all three kinds, so the panel reads chronologically.
+  // Newest first across both kinds, so the panel reads chronologically.
   items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return {
     items: items.slice(0, limit),
-    total: enquiryCount + bookingCount + reviewCount,
+    total: enquiryCount + bookingCount,
   };
 }

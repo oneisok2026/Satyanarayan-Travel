@@ -117,6 +117,19 @@ export const PACKAGE_FIELDS: FormSection[] = [
     ],
   },
   {
+    title: 'Day-wise itinerary',
+    description:
+      'Shown as the expandable day-by-day plan on the package page. Leave empty to hide that section.',
+    fields: [
+      {
+        name: 'itinerary',
+        label: 'Days',
+        kind: 'itinerary',
+        wide: true,
+      },
+    ],
+  },
+  {
     title: 'What is included',
     fields: [
       {

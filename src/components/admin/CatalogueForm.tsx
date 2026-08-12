@@ -8,6 +8,7 @@ import { Input, Textarea, Select, Checkbox } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
 import { useToast } from '@/components/ui/Toast';
 import { ImageUploadField } from './ImageUploadField';
+import { ItineraryField, type ItineraryDay } from './ItineraryField';
 import { slugify } from '@/lib/utils';
 
 export type FieldKind =
@@ -20,7 +21,9 @@ export type FieldKind =
   /** Newline-separated values, stored as a string array. */
   | 'list'
   /** Image URL with device upload, drag-and-drop and a preview. */
-  | 'image';
+  | 'image'
+  /** Repeating day-by-day entries, submitted as a JSON array. */
+  | 'itinerary';
 
 export interface FormField {
   name: string;
@@ -138,6 +141,16 @@ export function CatalogueForm({
               .map((entry) => entry.trim())
               .filter((entry) => entry.length > 0);
             break;
+          case 'itinerary':
+            // Serialised by ItineraryField into one hidden input. A malformed
+            // value would fail the server's schema anyway, so an unparseable
+            // string degrades to an empty list rather than throwing here.
+            try {
+              value = JSON.parse(String(raw ?? '[]'));
+            } catch {
+              value = [];
+            }
+            break;
           default:
             value = String(raw ?? '');
         }
@@ -215,6 +228,20 @@ export function CatalogueForm({
                       error={firstError(field)}
                     />
                   </div>
+                );
+              }
+
+              if (field.kind === 'itinerary') {
+                return (
+                  <ItineraryField
+                    key={field.name}
+                    name={field.name}
+                    label={field.label}
+                    description={field.description}
+                    defaultValue={Array.isArray(value) ? (value as ItineraryDay[]) : []}
+                    error={firstError(field)}
+                    className={wrapper ?? 'sm:col-span-2'}
+                  />
                 );
               }
 

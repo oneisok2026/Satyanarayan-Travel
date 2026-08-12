@@ -8,6 +8,7 @@ import { DataTable, type Column } from '@/components/ui/DataTable';
 import { Pagination } from '@/components/ui/Pagination';
 import { EnquiryStatusSelect } from '@/components/admin/EnquiryStatusSelect';
 import { EnquiryViewButton } from '@/components/admin/EnquiryViewButton';
+import { EnquiryDeleteButton } from '@/components/admin/EnquiryDeleteButton';
 import { formatDate } from '@/lib/utils';
 import { ENQUIRY_STATUSES, ENQUIRY_TYPES } from '@/constants';
 import type { EnquiryDTO } from '@/types';
@@ -42,7 +43,8 @@ export default async function AdminEnquiriesPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage('/admin/enquiries');
+  const admin = await requireAdminPage('/admin/enquiries');
+  const canDelete = admin.role === 'super_admin';
 
   const raw = await searchParams;
   const parsed = enquiryListQuerySchema.safeParse(raw);
@@ -105,6 +107,13 @@ export default async function AdminEnquiriesPage({
         <div className="flex items-center justify-end gap-2">
           <EnquiryViewButton enquiry={enquiry} />
           <EnquiryStatusSelect enquiryId={enquiry.id} status={enquiry.status} />
+          {canDelete && (
+            <EnquiryDeleteButton
+              enquiryId={enquiry.id}
+              referenceCode={enquiry.referenceCode}
+              customerName={enquiry.name}
+            />
+          )}
         </div>
       ),
     },

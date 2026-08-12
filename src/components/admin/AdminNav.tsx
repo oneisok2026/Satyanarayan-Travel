@@ -58,7 +58,6 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
       { href: '/admin/social-links', label: 'Social links' },
       { href: '/admin/blogs', label: 'Blog' },
       { href: '/admin/gallery', label: 'Gallery' },
-      { href: '/admin/reviews', label: 'Reviews' },
       { href: '/admin/pages', label: 'Pages' },
     ],
   },
@@ -67,7 +66,6 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
     links: [
       { href: '/admin/seo', label: 'SEO' },
       { href: '/admin/settings', label: 'Settings' },
-      { href: '/admin/users', label: 'Admin users', superAdminOnly: true },
     ],
   },
 ];

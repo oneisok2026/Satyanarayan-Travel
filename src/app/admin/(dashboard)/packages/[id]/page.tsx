@@ -42,7 +42,9 @@ export default async function EditPACKAGEPage({
 
   // Fields the form does not expose are sent back unchanged, so saving a
   // basic edit cannot silently wipe an itinerary or gallery.
-  const keep = ['destinationIds', 'categoryId', 'gallery', 'journeyDates', 'itinerary', 'hotels'];
+  // itinerary is edited by the form now, so it must not be passed through — a
+  // stale copy would overwrite the admin's changes on save.
+  const keep = ['destinationIds', 'categoryId', 'gallery', 'journeyDates', 'hotels'];
   const passthrough: Record<string, unknown> = {};
   for (const key of keep) {
     if (item[key] !== undefined) passthrough[key] = item[key];

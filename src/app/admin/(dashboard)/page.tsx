@@ -71,13 +71,6 @@ export default async function AdminDashboardPage() {
           hint="Shown on the homepage"
           href="/admin/packages?featured=true"
         />
-        <StatCard
-          label="Reviews to moderate"
-          value={stats.reviews.pending}
-          hint="Awaiting approval"
-          href="/admin/reviews?status=pending"
-          highlight={stats.reviews.pending > 0}
-        />
       </div>
 
       <section className="mt-8" aria-labelledby="recent-activity">

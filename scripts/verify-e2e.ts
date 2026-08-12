@@ -330,39 +330,6 @@ async function main(): Promise<void> {
       'package listed',
     );
 
-    // -------------------------------------------------------------- 19-21
-    const review = await api('POST', '/api/reviews', customerCookie, {
-      packageId: String(seededPackage._id),
-      rating: 5,
-      title: 'Excellent end-to-end trip',
-      comment:
-        'This review was created by the end-to-end verification scenario and will be removed.',
-    });
-
-    const reviewData = (review.body.data as { review?: { id: string } })?.review;
-    step(
-      19,
-      'Customer submits review',
-      review.status === 201 && Boolean(reviewData?.id),
-      'held for moderation',
-    );
-
-    const moderation = await api(
-      'PATCH',
-      `/api/admin/reviews/${reviewData?.id}`,
-      adminCookie,
-      { status: 'approved' },
-    );
-    step(20, 'Admin moderates review', moderation.status === 200, 'approved');
-
-    const packageWithReview = await get(`/packages/${seededPackage.slug}`);
-    step(
-      21,
-      'Approved review appears on package',
-      packageWithReview.html.includes('Excellent end-to-end trip'),
-      'visible publicly',
-    );
-
     // -------------------------------------------------------------- 22-25
     const newPackage = await api('POST', '/api/admin/catalogue/packages', adminCookie, {
       title: `E2E Test Package ${stamp}`,
@@ -540,7 +507,6 @@ async function main(): Promise<void> {
           { email: { $regex: /@satyanarayan-test\.local$/ } },
         ],
       }),
-      models.Review.deleteMany({ userId: { $in: ids } }),
       models.Favourite.deleteMany({ userId: { $in: ids } }),
       models.AuditLog.deleteMany({ actorId: { $in: ids } }),
       models.TourPackage.deleteMany({ _id: { $in: created.packageIds } }),
@@ -550,15 +516,6 @@ async function main(): Promise<void> {
 
     for (const uid of created.uids) {
       await auth.deleteUser(uid).catch(() => undefined);
-    }
-
-    // The approved review changed the package's denormalised rating.
-    const seeded = await models.TourPackage.findOne({ status: 'published' })
-      .select('_id')
-      .lean();
-    if (seeded) {
-      const { recalculatePackageRating } = await import('../src/services/content.service');
-      await recalculatePackageRating(String(seeded._id)).catch(() => undefined);
     }
 
     await mongoose.disconnect();

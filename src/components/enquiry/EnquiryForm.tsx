@@ -4,6 +4,8 @@ import { useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea, Select, Checkbox, HoneypotField } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
+import { buildGmailComposeUrl } from '@/lib/utils';
+import { CONTACT } from '@/constants/navigation';
 import type { EnquiryType } from '@/constants';
 
 interface EnquiryFormProps {
@@ -19,6 +21,59 @@ interface EnquiryFormProps {
 
 interface FieldErrors {
   [key: string]: string[];
+}
+
+/** Human labels for the enquiry types, used in the email subject. */
+const TYPE_LABELS: Record<string, string> = {
+  contact: 'General enquiry',
+  package: 'Tour package enquiry',
+  destination: 'Destination enquiry',
+  hotel: 'Hotel booking enquiry',
+  car_rental: 'Car rental enquiry',
+  eticket: 'E-ticket booking enquiry',
+};
+
+/**
+ * Composes the mailto: message.
+ *
+ * The same details the server stored, written as plain text so the agency
+ * receives a readable enquiry in their inbox even when the visitor's mail
+ * client strips formatting.
+ */
+function composeEmail(
+  fields: Record<string, string>,
+  extraFields: { name: string; label: string }[],
+  reference: string,
+  type: EnquiryType,
+): { subject: string; body: string } {
+  const lines: string[] = [
+    `Reference: ${reference}`,
+    '',
+    `Name: ${fields.name}`,
+    `Phone: ${fields.phone}`,
+    `Email: ${fields.email}`,
+  ];
+
+  if (fields.travelDate) lines.push(`Travel date: ${fields.travelDate}`);
+
+  const adults = Number(fields.adults || 0);
+  const children = Number(fields.children || 0);
+  if (adults || children) {
+    lines.push(`Travellers: ${adults} adult(s)${children ? `, ${children} child(ren)` : ''}`);
+  }
+
+  if (fields.budget) lines.push(`Approximate budget: INR ${fields.budget} per person`);
+
+  for (const field of extraFields) {
+    if (fields[field.name]) lines.push(`${field.label}: ${fields[field.name]}`);
+  }
+
+  if (fields.message) lines.push('', 'Message:', fields.message);
+
+  return {
+    subject: `${TYPE_LABELS[type] ?? 'Enquiry'} — ${fields.name} (${reference})`,
+    body: lines.join('\n'),
+  };
 }
 
 /**
@@ -45,6 +100,8 @@ export function EnquiryForm({
   const [reference, setReference] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  /** Kept so the success panel can re-open the draft if the tab was blocked. */
+  const [composeUrl, setComposeUrl] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,6 +110,16 @@ export function EnquiryForm({
     setSubmitting(true);
 
     const data = new FormData(event.currentTarget);
+
+    // Claimed synchronously inside the submit gesture: a browser only trusts
+    // window.open while it is still handling the user's click, so the tab is
+    // opened now and pointed at Gmail once the enquiry is saved. "noopener"
+    // is deliberately omitted — it nulls the returned handle, and the tab
+    // starts blank on our own origin rather than on the destination.
+    const composeTab = window.open('', '_blank');
+    // The blank tab can still reach back through window.opener until it is
+    // navigated, so the link is severed immediately.
+    if (composeTab) composeTab.opener = null;
 
     const serviceDetails: Record<string, string> = {};
     for (const field of extraFields) {
@@ -94,14 +161,39 @@ export function EnquiryForm({
       if (!response.ok || !body?.success) {
         if (body?.error?.fields) setFieldErrors(body.error.fields);
         setError(body?.error?.message ?? 'Could not send your enquiry. Please try again.');
+        // Nothing was saved, so the waiting tab has no draft to show.
+        composeTab?.close();
         return;
       }
 
-      setReference(body.data.enquiry.referenceCode);
+      const referenceCode = body.data.enquiry.referenceCode as string;
+
+      // The enquiry is already saved; this hands the visitor a prefilled
+      // Gmail draft addressed to the agency, the browser-side counterpart of
+      // the WhatsApp button.
+      const { subject, body: emailBody } = composeEmail(
+        Object.fromEntries(
+          [...data.entries()].map(([key, entry]) => [key, String(entry)]),
+        ),
+        extraFields,
+        referenceCode,
+        type,
+      );
+
+      const url = buildGmailComposeUrl(CONTACT.email, subject, emailBody);
+      setComposeUrl(url);
+      setReference(referenceCode);
       formRef.current?.reset();
       onSuccess?.();
+
+      // Point the tab opened synchronously on submit at the compose window.
+      // Opening here instead would be after an await, which popup blockers
+      // treat as untrusted and reject.
+      if (composeTab && !composeTab.closed) composeTab.location.href = url;
+      else window.open(url, '_blank', 'noopener,noreferrer');
     } catch {
       setError('Network problem. Please check your connection and try again.');
+      composeTab?.close();
     } finally {
       setSubmitting(false);
     }
@@ -114,6 +206,20 @@ export function EnquiryForm({
           Thank you — our team will be in touch within one working day. Your reference is{' '}
           <strong>{reference}</strong>.
         </p>
+        {composeUrl && (
+          <p className="mt-2">
+            A Gmail tab should have opened with the details ready to send.{' '}
+            <a
+              href={composeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline underline-offset-4"
+            >
+              Open it again
+            </a>{' '}
+            if it did not.
+          </p>
+        )}
       </Alert>
     );
   }

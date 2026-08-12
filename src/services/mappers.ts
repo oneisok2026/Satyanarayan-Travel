@@ -9,7 +9,6 @@ import type {
   EnquiryDTO,
   GalleryItemDTO,
   ImageDTO,
-  ReviewDTO,
   ServiceDTO,
   TourPackageDTO,
   TourPackageSummaryDTO,
@@ -256,6 +255,7 @@ export function toEnquiryDTO(input: MapperInput): EnquiryDTO {
     budget: document.budget as number | undefined,
     message: document.message as string | undefined,
     status: document.status as EnquiryDTO['status'],
+    readAt: isoOptional(document.readAt),
     serviceDetails: document.serviceDetails as EnquiryDTO['serviceDetails'],
     createdAt: iso(document.createdAt),
     updatedAt: iso(document.updatedAt),
@@ -312,29 +312,6 @@ export function toBookingDTO(input: MapperInput): BookingDTO {
     createdAt: iso(document.createdAt),
     updatedAt: iso(document.updatedAt),
     // adminNotes is select:false and never mapped here.
-  };
-}
-
-// ------------------------------------------------------------------ review --
-
-export function toReviewDTO(input: MapperInput): ReviewDTO {
-  const document = asLean(input);
-  const pkg = document.packageId as Lean | undefined;
-
-  return {
-    id: str(document._id),
-    packageRef:
-      pkg && typeof pkg === 'object' && pkg.slug
-        ? { id: str(pkg._id), title: str(pkg.title), slug: str(pkg.slug) }
-        : undefined,
-    authorName: str(document.authorName),
-    authorPhoto: document.authorPhoto as string | undefined,
-    rating: (document.rating as number) ?? 0,
-    title: document.title as string | undefined,
-    comment: str(document.comment),
-    status: document.status as ReviewDTO['status'],
-    travelDate: isoOptional(document.travelDate),
-    createdAt: iso(document.createdAt),
   };
 }
 

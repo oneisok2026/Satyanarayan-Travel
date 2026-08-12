@@ -14,6 +14,7 @@ import { Booking } from '@/models/Booking';
 import { toObjectId } from '@/lib/security/sanitize';
 import { conflict, notFound } from '@/lib/errors';
 import { deleteObject, objectPathFromUrl } from '@/lib/firebase/storage';
+import { deleteImage, imageIdFromUrl } from '@/lib/db/image-store';
 import type { ContentStatus } from '@/constants';
 
 /**
@@ -177,6 +178,11 @@ export async function updateCatalogueItem(
 
   if (!after) throw notFound(labelFor(resource));
 
+  // Replacing or clearing an image leaves the old bytes with nothing pointing
+  // at them. Only URLs the update actually dropped are removed, so an image
+  // still referenced elsewhere on the record survives.
+  await releaseReplacedImages(before, after);
+
   return {
     before: serializeDocument(before) as Record<string, unknown>,
     after: serializeDocument(after) as Record<string, unknown>,
@@ -297,17 +303,12 @@ export async function deleteCatalogueItem(
 
   await modelFor(resource).deleteOne({ _id: objectId });
 
-  // A gallery item exists only for its image, so removing the record without
-  // the file would leave an unreachable object paying for storage forever.
-  // Best-effort and after the delete: an orphaned file is far better than a
-  // failed deletion the admin has to retry.
-  if (resource === 'gallery' || resource === 'hero-slides') {
-    const image = document.image as { url?: string } | undefined;
-    if (image?.url) {
-      const path = objectPathFromUrl(image.url);
-      if (path) await deleteObject(path);
-    }
-  }
+  // Uploaded images are only reachable through the record that referenced
+  // them, so deleting one without its images leaves bytes in the database
+  // that nothing can ever surface or remove. Best-effort and after the
+  // delete: an orphaned file is far better than a deletion the admin has to
+  // retry.
+  await releaseImages(document);
 
   return {
     title: String(
@@ -315,4 +316,71 @@ export async function deleteCatalogueItem(
     ),
     slug: String(document.slug ?? ''),
   };
+}
+
+/**
+ * Deletes every uploaded image a record referenced.
+ *
+ * Walks the whole document rather than naming fields per resource: a package
+ * carries coverImage, a gallery array and a picture on each itinerary day, and
+ * a service has both coverImage and showcaseImage. Enumerating those by hand
+ * is the kind of list that silently goes stale when a field is added, leaving
+ * bytes behind with nothing pointing at them.
+ *
+ * Externally hosted URLs are skipped — an Unsplash link is not ours to
+ * delete — and every removal is best-effort.
+ */
+async function releaseImages(document: Record<string, unknown>): Promise<void> {
+  await deleteUploadedImages(collectImageUrls(document));
+}
+
+/** Removes images the update dropped, keeping any the record still uses. */
+async function releaseReplacedImages(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): Promise<void> {
+  const kept = collectImageUrls(after);
+  const dropped = [...collectImageUrls(before)].filter((url) => !kept.has(url));
+
+  await deleteUploadedImages(new Set(dropped));
+}
+
+/** Every `url` string anywhere in a record, at any nesting depth. */
+function collectImageUrls(document: Record<string, unknown>): Set<string> {
+  const urls = new Set<string>();
+
+  const walk = (value: unknown, depth: number): void => {
+    // Deep enough for itinerary[].image.url; a guard against a cyclic
+    // structure costing an unbounded walk.
+    if (depth > 6 || value === null || typeof value !== 'object') return;
+
+    if (Array.isArray(value)) {
+      for (const entry of value) walk(entry, depth + 1);
+      return;
+    }
+
+    for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+      if (key === 'url' && typeof entry === 'string') urls.add(entry);
+      else walk(entry, depth + 1);
+    }
+  };
+
+  walk(document, 0);
+  return urls;
+}
+
+/** Deletes only images we host; external links are left alone. */
+async function deleteUploadedImages(urls: Set<string>): Promise<void> {
+  for (const url of urls) {
+    // Images live in GridFS now; the Firebase branch still runs so records
+    // uploaded before the switch clean up their old objects too.
+    const imageId = imageIdFromUrl(url);
+    if (imageId) {
+      await deleteImage(imageId);
+      continue;
+    }
+
+    const path = objectPathFromUrl(url);
+    if (path) await deleteObject(path);
+  }
 }

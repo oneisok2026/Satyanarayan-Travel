@@ -94,16 +94,45 @@ export async function uploadPublicObject({
   // next.config.mjs remotePatterns.
   const downloadToken = randomUUID();
 
-  await file.save(buffer, {
-    resumable: false,
-    contentType,
-    metadata: {
+  try {
+    await file.save(buffer, {
+      resumable: false,
       contentType,
-      // Content-addressed names never change, so they can be cached hard.
-      cacheControl: 'public, max-age=31536000, immutable',
-      metadata: { firebaseStorageDownloadTokens: downloadToken },
-    },
-  });
+      metadata: {
+        contentType,
+        // Content-addressed names never change, so they can be cached hard.
+        cacheControl: 'public, max-age=31536000, immutable',
+        metadata: { firebaseStorageDownloadTokens: downloadToken },
+      },
+    });
+  } catch (error) {
+    // A configured-but-nonexistent bucket is the common setup mistake: the
+    // env var is set from the Firebase console's display name, but Storage
+    // was never provisioned, so every write 404s. Without this the generic
+    // handler reports an opaque 500 and the admin has nothing to act on.
+    const status = (error as { code?: number }).code;
+    if (status === 404) {
+      logger.error('storage.upload failed: bucket does not exist', {
+        bucket: bucket.name,
+      });
+      throw serviceUnavailable(
+        `The storage bucket "${bucket.name}" does not exist. Open the Firebase console ` +
+          '→ Build → Storage → Get started to create it, then check ' +
+          'FIREBASE_STORAGE_BUCKET matches the bucket name shown there. ' +
+          'You can paste an image URL in the meantime.',
+      );
+    }
+
+    if (status === 403) {
+      logger.error('storage.upload failed: permission denied', { bucket: bucket.name });
+      throw serviceUnavailable(
+        `Permission denied writing to "${bucket.name}". Grant the service account ` +
+          'the Storage Object Admin role, or paste an image URL instead.',
+      );
+    }
+
+    throw error;
+  }
 
   return {
     url:

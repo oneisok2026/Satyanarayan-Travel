@@ -189,6 +189,55 @@ export async function addEnquiryNote(
   return toEnquiryDTO(enquiry.toObject());
 }
 
+/**
+ * Records that an admin has opened this enquiry.
+ *
+ * Idempotent and first-write-wins: the timestamp records when it was *first*
+ * seen, so a second admin opening it later does not reset it. Returns the
+ * unread count so the caller can refresh the badge without a second request.
+ */
+export async function markEnquiryRead(enquiryId: string): Promise<{ unread: number }> {
+  await connectToDatabase();
+
+  const result = await Enquiry.updateOne(
+    { _id: toObjectId(enquiryId), readAt: { $exists: false } },
+    { $set: { readAt: new Date() } },
+  );
+
+  // matchedCount 0 means it was already read, which is not an error — but a
+  // genuinely missing enquiry should still surface as one.
+  if (result.matchedCount === 0) {
+    const exists = await Enquiry.exists({ _id: toObjectId(enquiryId) });
+    if (!exists) throw notFound('Enquiry');
+  }
+
+  const unread = await Enquiry.countDocuments({ readAt: { $exists: false } });
+  return { unread };
+}
+
+/**
+ * Permanently removes an enquiry.
+ *
+ * Unlike catalogue records there is nothing to archive to: an enquiry has no
+ * public URL and nothing references it, so a hard delete leaves no dangling
+ * data. The identifying fields are returned for the audit entry, which
+ * outlives the record itself.
+ */
+export async function deleteEnquiry(
+  enquiryId: string,
+): Promise<{ referenceCode: string; name: string; email: string }> {
+  await connectToDatabase();
+
+  const removed = await Enquiry.findByIdAndDelete(toObjectId(enquiryId)).lean();
+  if (!removed) throw notFound('Enquiry');
+
+  return {
+    referenceCode: removed.referenceCode,
+    name: removed.name,
+    email: removed.email,
+  };
+}
+
 /** Admin view including internal notes, which the customer DTO omits. */
 export async function getEnquiryForAdmin(enquiryId: string) {
   await connectToDatabase();

@@ -4,15 +4,14 @@ import { notFound } from 'next/navigation';
 import { PageHero } from '@/components/layout/PageHero';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { Accordion } from '@/components/ui/Accordion';
-import { Rating } from '@/components/ui/Rating';
 import { PackageGrid } from '@/components/tours/PackageGrid';
 import { PackageEnquiryPanel } from '@/components/tours/PackageEnquiryPanel';
 import { StickyBookingBar } from '@/components/tours/StickyBookingBar';
+import { BackToToursBar } from '@/components/tours/BackToToursBar';
 import {
   getPublishedPackageBySlug,
   getRelatedPackages,
 } from '@/services/package.service';
-import { listApprovedReviews } from '@/services/content.service';
 import { isAppError } from '@/lib/errors';
 import { clientEnv } from '@/lib/env';
 import { formatDuration, formatDate, stripHtml, truncate } from '@/lib/utils';
@@ -61,10 +60,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
     throw error;
   }
 
-  const [related, reviews] = await Promise.all([
-    getRelatedPackages(pkg.id, 3),
-    listApprovedReviews(pkg.id, 1, 6),
-  ]);
+  const related = await getRelatedPackages(pkg.id, 3);
 
   return (
     <>
@@ -88,11 +84,10 @@ export default async function PackageDetailPage({ params }: PageProps) {
               {pkg.destinations.map((d) => d.name).join(' · ')}
             </span>
           )}
-          {pkg.rating.count > 0 && (
-            <Rating value={pkg.rating.average} count={pkg.rating.count} size="sm" />
-          )}
         </div>
       </PageHero>
+
+      <BackToToursBar type={pkg.type} />
 
       <div className="container-page py-12 lg:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.7fr_1fr]">
@@ -314,45 +309,6 @@ export default async function PackageDetailPage({ params }: PageProps) {
               </section>
             )}
 
-            {reviews.reviews.length > 0 && (
-              <section className="mt-12" aria-labelledby="reviews-heading">
-                <h2
-                  id="reviews-heading"
-                  className="font-display text-2xl font-semibold text-sand-900"
-                >
-                  Traveller reviews
-                </h2>
-                <div className="mt-5 flex flex-col gap-4">
-                  {reviews.reviews.map((review) => (
-                    <figure
-                      key={review.id}
-                      className="rounded-2xl bg-white p-5 ring-1 ring-sand-200"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <Rating value={review.rating} size="sm" />
-                        <time
-                          dateTime={review.createdAt}
-                          className="text-xs text-sand-500"
-                        >
-                          {formatDate(review.createdAt)}
-                        </time>
-                      </div>
-                      {review.title && (
-                        <figcaption className="mt-2 font-medium text-sand-900">
-                          {review.title}
-                        </figcaption>
-                      )}
-                      <blockquote className="mt-1.5 text-sm leading-relaxed text-sand-600">
-                        {review.comment}
-                      </blockquote>
-                      <figcaption className="mt-3 text-xs text-sand-500">
-                        — {review.authorName}
-                      </figcaption>
-                    </figure>
-                  ))}
-                </div>
-              </section>
-            )}
           </div>
 
           <PackageEnquiryPanel
@@ -403,13 +359,6 @@ export default async function PackageDetailPage({ params }: PageProps) {
               availability: 'https://schema.org/InStock',
               url: `${clientEnv.NEXT_PUBLIC_SITE_URL}/packages/${pkg.slug}`,
             },
-            ...(pkg.rating.count > 0 && {
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: pkg.rating.average,
-                reviewCount: pkg.rating.count,
-              },
-            }),
           }),
         }}
       />

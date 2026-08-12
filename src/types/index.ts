@@ -5,7 +5,6 @@ import type {
   EnquiryType,
   PackageType,
   PaymentStatus,
-  ReviewStatus,
   UserRole,
   UserStatus,
 } from '@/constants';
@@ -187,6 +186,8 @@ export interface EnquiryDTO {
   budget?: number;
   message?: string;
   status: EnquiryStatus;
+  /** Set the first time an admin opened it; absent means unread. */
+  readAt?: string;
   serviceDetails?: Record<string, string | number | boolean>;
   createdAt: string;
   updatedAt: string;
@@ -220,19 +221,6 @@ export interface BookingDTO {
   notes?: string;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface ReviewDTO {
-  id: string;
-  packageRef?: Pick<TourPackageDTO, 'id' | 'title' | 'slug'>;
-  authorName: string;
-  authorPhoto?: string;
-  rating: number;
-  title?: string;
-  comment: string;
-  status: ReviewStatus;
-  travelDate?: string;
-  createdAt: string;
 }
 
 export interface BlogPostDTO {
@@ -291,13 +279,12 @@ export interface AdminStatsDTO {
   packages: { total: number; published: number; featured: number };
   enquiries: { total: number; pending: number; thisMonth: number };
   bookings: { total: number; pending: number; confirmed: number; thisMonth: number };
-  reviews: { pending: number };
   revenue: { confirmedTotal: number; currency: string };
 }
 
 export interface ActivityItemDTO {
   id: string;
-  type: 'enquiry' | 'booking' | 'review' | 'customer';
+  type: 'enquiry' | 'booking' | 'customer';
   title: string;
   subtitle: string;
   status?: string;

@@ -30,7 +30,6 @@ export {
   type PricingSnapshotAttributes,
 } from './Booking';
 export { Favourite, type FavouriteAttributes, type FavouriteDocument } from './Favourite';
-export { Review, type ReviewAttributes, type ReviewDocument } from './Review';
 export { BlogPost, type BlogPostAttributes, type BlogPostDocument } from './BlogPost';
 export {
   GalleryItem,

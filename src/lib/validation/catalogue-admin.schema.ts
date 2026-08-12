@@ -11,8 +11,27 @@ import { slugify } from '@/lib/utils';
  * the database.
  */
 
+/**
+ * Image URL: either an absolute link an admin pasted, or the relative
+ * /api/images/<id> path produced by an upload to GridFS.
+ *
+ * The relative form is deliberately narrow — a fixed prefix and a 24-character
+ * hex id — so this cannot be used to smuggle in a path like "/admin" or a
+ * "javascript:" scheme.
+ */
+const imageUrlSchema = z
+  .string()
+  .trim()
+  .max(1024)
+  .refine(
+    (value) =>
+      /^\/api\/images\/[a-f0-9]{24}$/i.test(value) ||
+      z.string().url().safeParse(value).success,
+    'Enter a valid image URL',
+  );
+
 const imageSchema = z.object({
-  url: z.string().trim().url('Enter a valid image URL').max(1024),
+  url: imageUrlSchema,
   alt: z.string().trim().max(300).default(''),
   width: z.coerce.number().int().min(1).optional(),
   height: z.coerce.number().int().min(1).optional(),

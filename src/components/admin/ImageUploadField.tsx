@@ -164,7 +164,10 @@ export function ImageUploadField({
               // Remote hosts outside next.config remotePatterns would throw;
               // falling back to a message keeps the editor usable either way.
               onError={() => setPreviewFailed(true)}
-              unoptimized={!url.startsWith('https://firebasestorage.googleapis.com/')}
+              // Same-origin GridFS images are already served with immutable
+              // caching, so let the optimizer handle them; unknown remote
+              // hosts bypass it rather than throwing.
+              unoptimized={!url.startsWith('/api/images/') && !url.startsWith('https://')}
             />
           ) : (
             <p className="px-3 text-center text-xs text-sand-500">

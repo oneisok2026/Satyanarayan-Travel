@@ -4,13 +4,8 @@ import { apiSuccess } from '@/lib/api-response';
 import { requireSuperAdmin } from '@/lib/firebase/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
 import { validateImageUpload, uploadBaseName } from '@/lib/security/upload';
-import { uploadPublicObject, isStorageConfigured } from '@/lib/firebase/storage';
-import {
-  validationError,
-  serviceUnavailable,
-  AppError,
-  ERROR_CODES,
-} from '@/lib/errors';
+import { storeImage } from '@/lib/db/image-store';
+import { validationError, AppError, ERROR_CODES } from '@/lib/errors';
 import { UPLOAD_FOLDERS, UPLOAD_LIMITS } from '@/constants';
 
 export const runtime = 'nodejs';
@@ -27,16 +22,13 @@ export const dynamic = 'force-dynamic';
  * Everything about the file that the client asserts (name, MIME type, size
  * header) is treated as untrusted. `validateImageUpload` re-derives the type
  * from magic bytes and `uploadBaseName` reduces the name to an allowlisted
- * character set before it is used in an object path.
+ * character set before it is used as a stored filename.
+ *
+ * Bytes go to GridFS in the application's own database, so uploads need no
+ * external storage service and work wherever the app is deployed.
  */
 export const POST = route('POST /api/admin/uploads', async (request: NextRequest) => {
   const admin = await requireSuperAdmin();
-
-  if (!isStorageConfigured()) {
-    throw serviceUnavailable(
-      'File uploads are not configured yet. Paste an image URL instead.',
-    );
-  }
 
   enforceRateLimit('upload', String(admin._id));
 
@@ -77,7 +69,7 @@ export const POST = route('POST /api/admin/uploads', async (request: NextRequest
 
   const baseName = uploadBaseName(file.name);
 
-  const stored = await uploadPublicObject({
+  const stored = await storeImage({
     buffer: validated.buffer,
     contentType: validated.mimeType,
     folder,
@@ -88,7 +80,7 @@ export const POST = route('POST /api/admin/uploads', async (request: NextRequest
   return apiSuccess(
     {
       url: stored.url,
-      path: stored.path,
+      path: stored.id,
       sizeBytes: stored.sizeBytes,
       contentType: stored.contentType,
     },
@@ -101,7 +93,8 @@ export const GET = route('GET /api/admin/uploads', async () => {
   await requireSuperAdmin();
 
   return apiSuccess({
-    enabled: isStorageConfigured(),
+    // Storage lives in the app's own database, so it is always available.
+    enabled: true,
     maxBytes: UPLOAD_LIMITS.maxImageBytes,
     allowedTypes: UPLOAD_LIMITS.allowedImageTypes,
   });

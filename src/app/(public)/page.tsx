@@ -3,7 +3,6 @@ import { buildPageMetadata } from '@/services/page-seo.service';
 import { Hero } from '@/components/home/Hero';
 import { WhyChooseUs } from '@/components/home/WhyChooseUs';
 import { ServicesStrip } from '@/components/home/ServicesStrip';
-import { Testimonials } from '@/components/home/Testimonials';
 import { CtaBand } from '@/components/home/CtaBand';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
@@ -18,7 +17,6 @@ import {
   listPublishedServices,
   listPublishedPosts,
   listGalleryItems,
-  listApprovedReviews,
   listHeroSlides,
 } from '@/services/content.service';
 
@@ -39,7 +37,6 @@ export default async function HomePage() {
     services,
     posts,
     gallery,
-    reviews,
     heroSlides,
   ] = await Promise.all([
     getFeaturedDestinations(8),
@@ -49,7 +46,6 @@ export default async function HomePage() {
     listPublishedServices(),
     listPublishedPosts({ page: 1, limit: 3 }),
     listGalleryItems(undefined, 1, 8),
-    listApprovedReviews(undefined, 1, 6),
     listHeroSlides(),
   ]);
 
@@ -166,8 +162,6 @@ export default async function HomePage() {
       <ServicesStrip services={services} />
 
       <WhyChooseUs />
-
-      <Testimonials reviews={reviews.reviews} />
 
       {gallery.items.length > 0 && (
         <Section aria-labelledby="gallery-heading">

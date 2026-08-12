@@ -5,7 +5,6 @@ import { User } from '@/models/User';
 import { TourPackage } from '@/models/TourPackage';
 import { Enquiry } from '@/models/Enquiry';
 import { Booking } from '@/models/Booking';
-import { Review } from '@/models/Review';
 import { buildSearchRegex, toObjectId } from '@/lib/security/sanitize';
 import { offsetFor } from '@/lib/validation/common.schema';
 import { notFound } from '@/lib/errors';
@@ -33,7 +32,6 @@ export async function getDashboardStats(): Promise<AdminStatsDTO> {
     bookingsPending,
     bookingsConfirmed,
     bookingsMonth,
-    reviewsPending,
     revenue,
   ] = await Promise.all([
     User.countDocuments({ role: 'customer' }),
@@ -48,7 +46,6 @@ export async function getDashboardStats(): Promise<AdminStatsDTO> {
     Booking.countDocuments({ status: { $in: ['requested', 'pending_confirmation'] } }),
     Booking.countDocuments({ status: 'confirmed' }),
     Booking.countDocuments({ createdAt: { $gte: startOfMonth } }),
-    Review.countDocuments({ status: 'pending' }),
     // Only confirmed/completed bookings count toward revenue.
     Booking.aggregate<{ total: number }>([
       { $match: { status: { $in: ['confirmed', 'completed'] } } },
@@ -74,7 +71,6 @@ export async function getDashboardStats(): Promise<AdminStatsDTO> {
       confirmed: bookingsConfirmed,
       thisMonth: bookingsMonth,
     },
-    reviews: { pending: reviewsPending },
     revenue: { confirmedTotal: revenue[0]?.total ?? 0, currency: 'INR' },
   };
 }

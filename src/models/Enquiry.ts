@@ -40,6 +40,14 @@ export interface EnquiryAttributes {
   /** Free-form per-service fields (pickup city, hotel category, sector…). */
   serviceDetails?: Record<string, string | number | boolean>;
   status: EnquiryStatus;
+  /**
+   * When an admin first opened this enquiry.
+   *
+   * Separate from `status` on purpose: reading an enquiry is not the same as
+   * having contacted the customer, so the notification badge clears without
+   * advancing the workflow and misreporting what has actually been done.
+   */
+  readAt?: Date;
   internalNotes: EnquiryNoteAttributes[];
   source: string;
   /** Retained for abuse investigation only; never surfaced to clients. */
@@ -78,6 +86,7 @@ const enquirySchema = new Schema<EnquiryAttributes>(
     message: { type: String, trim: true, maxlength: 4000 },
     serviceDetails: { type: Schema.Types.Mixed },
     status: { type: String, enum: ENQUIRY_STATUSES, default: 'new' },
+    readAt: { type: Date },
     internalNotes: { type: [noteSchema], default: [] },
     source: { type: String, default: 'website', trim: true, maxlength: 60 },
     ipHash: { type: String, select: false, maxlength: 64 },
@@ -87,6 +96,8 @@ const enquirySchema = new Schema<EnquiryAttributes>(
 
 // Admin inbox, newest first, filtered by status.
 enquirySchema.index({ status: 1, createdAt: -1 });
+// Unread feed for the notification bell.
+enquirySchema.index({ readAt: 1, createdAt: -1 });
 // Customer's own enquiry history.
 enquirySchema.index({ userId: 1, createdAt: -1 });
 // Enquiries against a given package.

@@ -101,6 +101,7 @@ describe('server modules are marked server-only', () => {
     'src/lib/firebase/auth.ts',
     'src/lib/firebase/storage.ts',
     'src/lib/db/connect.ts',
+    'src/lib/db/image-store.ts',
     'src/lib/security/upload.ts',
     'src/lib/email/provider.ts',
     'src/services/user.service.ts',

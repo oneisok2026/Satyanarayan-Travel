@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
 import { formatDate, formatPrice } from '@/lib/utils';
@@ -24,7 +25,33 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export function EnquiryViewButton({ enquiry }: { enquiry: EnquiryDTO }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [, startTransition] = useTransition();
+
+  /**
+   * Opening the dialog is what marks the enquiry read, which is what clears
+   * the notification badge. Fire-and-forget: the admin is already reading it,
+   * so a failed request must not block or interrupt that. It stays unread and
+   * the next open retries.
+   */
+  function handleOpen() {
+    setOpen(true);
+
+    if (enquiry.readAt) return;
+
+    void fetch(`/api/admin/enquiries/${enquiry.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ read: true }),
+    })
+      .then((response) => {
+        // Refresh so the bell's count reflects the change on this page too.
+        if (response.ok) startTransition(() => router.refresh());
+      })
+      .catch(() => undefined);
+  }
 
   const travellers =
     enquiry.travellers.adults + enquiry.travellers.children > 0
@@ -45,7 +72,7 @@ export function EnquiryViewButton({ enquiry }: { enquiry: EnquiryDTO }) {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-50"
       >
         View
