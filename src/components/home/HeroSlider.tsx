@@ -183,9 +183,23 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 )}
 
                 {(slide.ctaHref || slide.secondaryCtaHref) && (
-                  <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  // Side by side at every width. The lg button's px-8 makes the
+                  // pair too wide for a phone, so on mobile they share the row
+                  // and shrink their padding rather than wrapping onto two
+                  // lines, which pushed the slider dots off screen.
+                  <div className="mt-8 flex w-full items-center justify-center gap-2.5 sm:gap-3">
                     {slide.ctaHref && slide.ctaLabel && (
-                      <ButtonLink href={slide.ctaHref} size="lg">
+                      <ButtonLink
+                        href={slide.ctaHref}
+                        size="lg"
+                        className={cn(
+                          // Text shrinks and padding tightens on a phone so
+                          // both labels fit whole; the lg sizing returns from
+                          // sm upwards.
+                          'h-12 min-w-0 flex-1 px-3 text-[0.8125rem] leading-tight',
+                          'sm:h-13 sm:flex-none sm:px-8 sm:text-base',
+                        )}
+                      >
                         {slide.ctaLabel}
                       </ButtonLink>
                     )}
@@ -194,7 +208,11 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                         href={slide.secondaryCtaHref}
                         size="lg"
                         variant="outline"
-                        className="hover:text-brand-900 border-white/70 text-white hover:bg-white"
+                        className={cn(
+                          'hover:text-brand-900 border-white/70 text-white hover:bg-white',
+                          'h-12 min-w-0 flex-1 px-3 text-[0.8125rem] leading-tight',
+                          'sm:h-13 sm:flex-none sm:px-8 sm:text-base',
+                        )}
                       >
                         {slide.secondaryCtaLabel}
                       </ButtonLink>
