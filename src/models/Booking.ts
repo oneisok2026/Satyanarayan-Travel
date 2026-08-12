@@ -39,7 +39,11 @@ export interface PricingSnapshotAttributes {
 export interface BookingAttributes {
   _id: Types.ObjectId;
   bookingReference: string;
-  userId: Types.ObjectId;
+  /**
+   * Absent for guest bookings taken from the public package cards, which do
+   * not require an account. The contact block is what the agency works from.
+   */
+  userId?: Types.ObjectId;
   packageId: Types.ObjectId;
   /** Denormalized so a deleted package doesn't blank out booking history. */
   packageTitle: string;
@@ -85,7 +89,7 @@ const pricingSchema = new Schema<PricingSnapshotAttributes>(
 const bookingSchema = new Schema<BookingAttributes>(
   {
     bookingReference: { type: String, required: true, unique: true, trim: true, maxlength: 24 },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
     packageId: { type: Schema.Types.ObjectId, ref: 'TourPackage', required: true },
     packageTitle: { type: String, required: true, trim: true, maxlength: 200 },
     packageSlug: { type: String, required: true, trim: true, maxlength: 220 },

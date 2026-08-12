@@ -138,8 +138,14 @@ export default async function BookingDetailPage({
                   value={formatPrice(pricing.children * pricing.childPrice)}
                 />
               )}
-              <Row label="Subtotal" value={formatPrice(pricing.subtotal)} />
-              <Row label="Taxes" value={formatPrice(pricing.taxes)} />
+              {/* Older bookings were priced with GST added on top; the row is
+                  kept for those so their total still adds up. */}
+              {pricing.taxes > 0 && (
+                <>
+                  <Row label="Subtotal" value={formatPrice(pricing.subtotal)} />
+                  <Row label="Taxes" value={formatPrice(pricing.taxes)} />
+                </>
+              )}
               <div className="mt-1 flex items-center justify-between border-t border-sand-200 pt-3">
                 <dt className="font-medium text-sand-900">Total</dt>
                 <dd className="font-display text-xl font-semibold text-sand-900">

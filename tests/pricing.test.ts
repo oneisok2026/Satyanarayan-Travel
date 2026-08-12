@@ -42,15 +42,28 @@ describe('calculatePricing', () => {
     expect(result.subtotal).toBe(10_000);
   });
 
-  it('applies 5% tax to the subtotal', () => {
+  it('adds nothing on top, so the total matches the advertised price', () => {
+    // Package prices are quoted inclusive; a booking total that exceeded the
+    // figure on the package page would look like a hidden charge.
     const result = calculatePricing({
       unitPrice: 10_000,
       childPrice: 7_000,
       travellers: [{ age: 30 }],
     });
 
-    expect(result.taxes).toBe(500);
-    expect(result.total).toBe(10_500);
+    expect(result.taxes).toBe(0);
+    expect(result.total).toBe(10_000);
+  });
+
+  it('totals a mixed party at the sum of its fares', () => {
+    const result = calculatePricing({
+      unitPrice: 10_000,
+      childPrice: 7_000,
+      travellers: [{ age: 30 }, { age: 34 }, { age: 8 }],
+    });
+
+    expect(result.subtotal).toBe(27_000);
+    expect(result.total).toBe(27_000);
   });
 
   it('bills one adult fare when every traveller is an infant', () => {

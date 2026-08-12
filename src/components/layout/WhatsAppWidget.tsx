@@ -93,6 +93,12 @@ export function WhatsAppWidget() {
         'no-print floating-action fixed right-4 z-30 flex flex-col items-end gap-3',
         // .floating-action owns the vertical offset and the safe-area inset.
         'lg:right-6',
+        // The container is as wide as the panel it reserves space for (~20rem)
+        // even while that panel is closed, so it would otherwise sit invisibly
+        // over whatever is beneath it — the footer's social icons, for one —
+        // and swallow their hover and clicks. Only the panel and the button
+        // take pointer events; the empty space around them passes through.
+        'pointer-events-none',
       )}
       // The container only keeps an already-open panel alive while the cursor
       // travels between the button and the panel. It must not *open* anything:
@@ -114,7 +120,7 @@ export function WhatsAppWidget() {
           'transition-[opacity,transform] duration-250 ease-[cubic-bezier(0.22,1,0.36,1)]',
           'motion-reduce:transition-none',
           open
-            ? 'translate-y-0 scale-100 opacity-100'
+            ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
             : 'pointer-events-none translate-y-2 scale-95 opacity-0',
         )}
       >
@@ -231,7 +237,7 @@ export function WhatsAppWidget() {
         aria-controls={panelId}
         aria-label={open ? 'Close WhatsApp chat' : 'Chat with us on WhatsApp'}
         className={cn(
-          'grid size-13 place-items-center rounded-full text-white',
+          'pointer-events-auto grid size-13 place-items-center rounded-full text-white',
           'shadow-[--shadow-float] transition-[background-color,transform] duration-200',
           'hover:scale-105 active:scale-95 motion-reduce:transform-none',
           open ? 'bg-[#0f7a68]' : 'bg-[#25D366]',

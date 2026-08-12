@@ -22,7 +22,8 @@ import { toBookingDTO } from './mappers';
  */
 
 export interface CreateBookingInput {
-  userId: string;
+  /** Absent for a guest booking made without signing in. */
+  userId?: string;
   packageId: string;
   travelDate: Date;
   travellers: { name: string; age: number; gender?: 'male' | 'female' | 'other' }[];
@@ -51,11 +52,18 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingD
   }
 
   // A retried submission returns the original booking rather than duplicating.
-  if (input.idempotencyKey) {
-    const existing = await Booking.findOne({
-      userId: toObjectId(input.userId),
-      idempotencyKey: input.idempotencyKey,
-    }).lean();
+  // Guest bookings have no userId to scope by, so the key alone identifies
+  // them — it is client-generated and random, so a collision across visitors
+  // is not a practical concern.
+  const idempotencyFilter = input.idempotencyKey
+    ? {
+        ...(input.userId ? { userId: toObjectId(input.userId) } : { userId: { $exists: false } }),
+        idempotencyKey: input.idempotencyKey,
+      }
+    : null;
+
+  if (idempotencyFilter) {
+    const existing = await Booking.findOne(idempotencyFilter).lean();
 
     if (existing) {
       logger.info('Idempotent booking replay', {
@@ -80,7 +88,7 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingD
   try {
     const booking = await Booking.create({
       bookingReference: generateReference('STB'),
-      userId: toObjectId(input.userId),
+      ...(input.userId ? { userId: toObjectId(input.userId) } : {}),
       packageId: pkg._id,
       packageTitle: pkg.title,
       packageSlug: pkg.slug,
@@ -102,11 +110,8 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingD
     return toBookingDTO(booking.toObject());
   } catch (error) {
     // Lost the race against a concurrent identical submission — return theirs.
-    if (isDuplicateKey(error) && input.idempotencyKey) {
-      const existing = await Booking.findOne({
-        userId: toObjectId(input.userId),
-        idempotencyKey: input.idempotencyKey,
-      }).lean();
+    if (isDuplicateKey(error) && idempotencyFilter) {
+      const existing = await Booking.findOne(idempotencyFilter).lean();
       if (existing) return toBookingDTO(existing);
     }
     throw error;
@@ -135,8 +140,6 @@ export function calculatePricing(input: {
   if (adults === 0 && children === 0) adults = 1;
 
   const subtotal = adults * input.unitPrice + children * input.childPrice;
-  // GST on tour packages, applied server-side.
-  const taxes = Math.round(subtotal * 0.05);
 
   return {
     unitPrice: input.unitPrice,
@@ -144,9 +147,11 @@ export function calculatePricing(input: {
     adults,
     children,
     subtotal,
-    taxes,
+    // Package prices are quoted inclusive, so nothing is added on top: the
+    // total must match the figure shown on the package page.
+    taxes: 0,
     discount: 0,
-    total: subtotal + taxes,
+    total: subtotal,
     currency: 'INR',
   };
 }
@@ -282,6 +287,29 @@ export async function updatePaymentStatus(
   await booking.save();
 
   return { previous, booking: toBookingDTO(booking.toObject()) };
+}
+
+/**
+ * Permanently removes a booking.
+ *
+ * Distinct from cancelling: cancellation keeps the record and its history,
+ * which is what the agency normally wants. This is for clearing test entries
+ * and spam, so it is restricted to a super admin and audited — the identifying
+ * fields are returned because the record itself will not survive the write.
+ */
+export async function deleteBooking(
+  bookingId: string,
+): Promise<{ bookingReference: string; customerName: string; packageTitle: string }> {
+  await connectToDatabase();
+
+  const removed = await Booking.findByIdAndDelete(toObjectId(bookingId)).lean();
+  if (!removed) throw notFound('Booking');
+
+  return {
+    bookingReference: removed.bookingReference,
+    customerName: removed.contact.name,
+    packageTitle: removed.packageTitle,
+  };
 }
 
 /** Customer-initiated cancellation, only before confirmation. */

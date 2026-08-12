@@ -7,8 +7,10 @@ import { SearchFilters } from '@/components/ui/SearchFilters';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { Pagination } from '@/components/ui/Pagination';
 import { BookingStatusControls } from '@/components/admin/BookingStatusControls';
+import { BookingViewButton } from '@/components/admin/BookingViewButton';
+import { BookingDeleteButton } from '@/components/admin/BookingDeleteButton';
 import { formatDate, formatPrice } from '@/lib/utils';
-import { BOOKING_STATUSES, PAYMENT_STATUSES } from '@/constants';
+import { BOOKING_STATUSES } from '@/constants';
 import type { BookingDTO } from '@/types';
 
 export const metadata: Metadata = {
@@ -26,7 +28,8 @@ export default async function AdminBookingsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage('/admin/bookings');
+  const admin = await requireAdminPage('/admin/bookings');
+  const canDelete = admin.role === 'super_admin';
 
   const raw = await searchParams;
   const parsed = bookingListQuerySchema.safeParse(raw);
@@ -83,11 +86,17 @@ export default async function AdminBookingsPage({
       header: 'Status',
       align: 'right',
       render: (booking) => (
-        <BookingStatusControls
-          bookingId={booking.id}
-          status={booking.status}
-          paymentStatus={booking.paymentStatus}
-        />
+        <div className="flex items-center justify-end gap-2">
+          <BookingViewButton booking={booking} />
+          <BookingStatusControls bookingId={booking.id} status={booking.status} />
+          {canDelete && (
+            <BookingDeleteButton
+              bookingId={booking.id}
+              bookingReference={booking.bookingReference}
+              customerName={booking.contact.name}
+            />
+          )}
+        </div>
       ),
     },
   ];
@@ -107,14 +116,6 @@ export default async function AdminBookingsPage({
             name: 'status',
             label: 'All statuses',
             options: BOOKING_STATUSES.map((status) => ({
-              value: status,
-              label: label(status),
-            })),
-          },
-          {
-            name: 'paymentStatus',
-            label: 'All payments',
-            options: PAYMENT_STATUSES.map((status) => ({
               value: status,
               label: label(status),
             })),

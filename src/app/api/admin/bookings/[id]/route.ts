@@ -1,13 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { route, readJsonBody, getClientIp } from '@/lib/api-handler';
 import { apiSuccess } from '@/lib/api-response';
-import { requireAdmin } from '@/lib/firebase/auth';
+import { requireAdmin, requireSuperAdmin } from '@/lib/firebase/auth';
 import { objectIdSchema } from '@/lib/validation/common.schema';
 import {
   updateBookingStatusSchema,
   updatePaymentStatusSchema,
 } from '@/lib/validation/booking.schema';
 import {
+  deleteBooking,
   getBooking,
   updateBookingStatus,
   updatePaymentStatus,
@@ -84,5 +85,41 @@ export const PATCH = route<Context>(
     });
 
     return apiSuccess({ booking }, { message: 'Booking updated' });
+  },
+);
+
+/**
+ * DELETE — super_admin only.
+ *
+ * A plain admin can move a booking through its statuses, including cancelling
+ * it, but cannot destroy the record. The audit entry keeps the reference and
+ * customer after the booking itself is gone.
+ */
+export const DELETE = route<Context>(
+  'DELETE /api/admin/bookings/[id]',
+  async (request: NextRequest, { params }) => {
+    const admin = await requireSuperAdmin();
+    const { id } = await params;
+    const bookingId = objectIdSchema.parse(id);
+
+    const removed = await deleteBooking(bookingId);
+
+    await recordAudit({
+      actor: admin,
+      action: 'booking.deleted',
+      entityType: 'Booking',
+      entityId: bookingId,
+      metadata: {
+        bookingReference: removed.bookingReference,
+        customerName: removed.customerName,
+        packageTitle: removed.packageTitle,
+      },
+      ip: getClientIp(request),
+    });
+
+    return apiSuccess(
+      { deleted: true },
+      { message: `Booking ${removed.bookingReference} deleted permanently.` },
+    );
   },
 );

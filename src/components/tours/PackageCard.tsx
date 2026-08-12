@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { cn, formatPrice, formatDuration } from '@/lib/utils';
 import { Rating } from '@/components/ui/Rating';
+import { BookNowButton } from './BookNowButton';
 import type { TourPackageSummaryDTO } from '@/types';
 
 interface PackageCardProps {
@@ -137,6 +138,31 @@ export function PackageCard({
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </span>
+        </div>
+
+        {/*
+          Both controls sit above the title's stretched link, which otherwise
+          covers the whole card: `relative z-10` lifts them out of its way so
+          they receive their own clicks.
+        */}
+        <div className="mt-4 flex items-center gap-2 border-t border-sand-100 pt-4">
+          <BookNowButton
+            packageId={pkg.id}
+            packageTitle={pkg.title}
+            price={pkg.price}
+          />
+
+          <Link
+            href="/contact"
+            className={cn(
+              'relative z-10 flex-1 rounded-full px-4 py-2.5 text-center text-sm font-medium',
+              'text-brand-800 ring-1 ring-brand-700 transition-colors',
+              'hover:bg-brand-700 hover:text-white',
+              'focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none',
+            )}
+          >
+            Contact us
+          </Link>
         </div>
       </div>
     </article>

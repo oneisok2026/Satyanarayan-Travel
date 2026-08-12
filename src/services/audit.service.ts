@@ -51,8 +51,7 @@ export type AuditAction =
   | 'booking.status_changed'
   | 'booking.payment_changed'
   | 'booking.cancelled'
-  | 'review.moderated'
-  | 'review.deleted'
+  | 'booking.deleted'
   | 'settings.updated';
 
 interface AuditInput {
