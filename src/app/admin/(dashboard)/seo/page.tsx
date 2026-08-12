@@ -244,7 +244,7 @@ function ResourceCard({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="rounded-2xl bg-white p-5 ring-1 ring-sand-200 transition-shadow hover:shadow-[--shadow-card]"
+      className="rounded-2xl bg-white p-5 ring-1 ring-sand-200 transition-shadow hover:shadow-[var(--shadow-card)]"
     >
       <p className="font-medium text-sand-900">{title}</p>
       <p className="mt-1 truncate text-xs text-sand-500">{description}</p>

@@ -178,7 +178,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
           </div>
 
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <div className="rounded-2xl bg-white p-6 shadow-[--shadow-card] ring-1 ring-sand-200">
+            <div className="rounded-2xl bg-white p-6 shadow-[var(--shadow-card)] ring-1 ring-sand-200">
               <h2 className="font-display text-lg font-semibold text-sand-900">
                 Request {service.name.toLowerCase()}
               </h2>

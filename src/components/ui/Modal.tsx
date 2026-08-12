@@ -131,7 +131,7 @@ export function Modal({
         tabIndex={-1}
         className={cn(
           'animate-scale-in relative flex max-h-[92vh] w-full flex-col',
-          'rounded-t-2xl bg-white shadow-[--shadow-float] sm:rounded-2xl',
+          'rounded-t-2xl bg-white shadow-[var(--shadow-float)] sm:rounded-2xl',
           sizes[size],
         )}
       >

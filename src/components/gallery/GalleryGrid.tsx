@@ -30,8 +30,7 @@ export function GalleryGrid({ items, eagerCount = 0, className }: GalleryGridPro
           key={item.id}
           className={cn(
             'group relative overflow-hidden rounded-xl bg-sand-200',
-            'ring-1 ring-accent-600/25 transition-shadow duration-300',
-            'hover:ring-accent-600/60',
+            'ring-1 ring-accent-600 transition-shadow duration-300',
             // Every third tile spans two rows for visual rhythm.
             index % 5 === 0 ? 'aspect-square lg:row-span-2 lg:aspect-[3/4]' : 'aspect-square',
           )}

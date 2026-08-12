@@ -46,8 +46,8 @@ export function BackToTop() {
       // Hidden from AT and the tab order until it is actually usable.
       inert={!visible}
       className={cn(
-        'no-print floating-action fixed left-4 z-30 grid size-13 place-items-center',
-        'rounded-2xl bg-accent-600 text-white shadow-[--shadow-float]',
+        'no-print floating-action fixed left-4 z-30 grid size-11 place-items-center',
+        'rounded-xl bg-accent-600 text-white shadow-[var(--shadow-float)]',
         // .floating-action owns the vertical offset and the safe-area inset,
         // so both floating buttons stay on one baseline.
         'lg:left-6',
@@ -61,7 +61,7 @@ export function BackToTop() {
       )}
     >
       <svg
-        className="size-5.5"
+        className="size-4.5"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"

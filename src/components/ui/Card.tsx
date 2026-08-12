@@ -18,12 +18,12 @@ export function Card({
   return (
     <Tag
       className={cn(
-        'overflow-hidden rounded-2xl bg-white shadow-[--shadow-card]',
-        'ring-1 ring-accent-600/25',
+        'overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-card)]',
+        'ring-1 ring-accent-600',
         interactive && [
           'transition-[box-shadow,transform] duration-300',
           'ease-[cubic-bezier(0.22,1,0.36,1)]',
-          'hover:-translate-y-1 hover:shadow-[--shadow-card-hover] hover:ring-accent-600/60',
+          'hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]',
           'motion-reduce:transform-none motion-reduce:transition-none',
         ],
         className,

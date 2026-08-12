@@ -32,9 +32,13 @@ export function PackageCard({
     <article
       className={cn(
         'group relative flex flex-col overflow-hidden rounded-2xl bg-white',
-        'shadow-[--shadow-card] ring-1 ring-accent-600/25',
+        // A solid accent hairline: at low opacity it read as grey against the
+        // white card. shadow-[var(...)] not shadow-[--...]: Tailwind v4 emits
+        // the bare token as a literal, which invalidates box-shadow entirely
+        // and silently drops the ring with it.
+        'shadow-[var(--shadow-card)] ring-1 ring-accent-600',
         'transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-        'hover:-translate-y-1 hover:shadow-[--shadow-card-hover] hover:ring-accent-600/60',
+        'hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]',
         'motion-reduce:transform-none motion-reduce:transition-none',
         className,
       )}

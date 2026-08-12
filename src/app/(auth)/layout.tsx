@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Logo />
         </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-[--shadow-card] ring-1 ring-sand-200/70 sm:p-8">
+        <div className="rounded-2xl bg-white p-6 shadow-[var(--shadow-card)] ring-1 ring-sand-200/70 sm:p-8">
           {children}
         </div>
 

@@ -169,7 +169,7 @@ export function NotificationBell() {
           aria-label="Notifications"
           className={cn(
             'absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))]',
-            'overflow-hidden rounded-2xl bg-white shadow-[--shadow-float] ring-1 ring-sand-200',
+            'overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-float)] ring-1 ring-sand-200',
           )}
         >
           <div className="flex items-center justify-between border-b border-sand-200 px-4 py-3">

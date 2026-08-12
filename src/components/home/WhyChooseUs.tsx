@@ -51,9 +51,9 @@ export function WhyChooseUs() {
             <div
               className={cn(
                 'flex h-full flex-col rounded-2xl bg-sand-50 p-6',
-                'ring-1 ring-accent-600/25 transition-[box-shadow,transform] duration-300',
+                'ring-1 ring-accent-600 transition-[box-shadow,transform] duration-300',
                 'ease-[cubic-bezier(0.22,1,0.36,1)]',
-                'hover:-translate-y-1 hover:shadow-[--shadow-card] hover:ring-accent-600/60',
+                'hover:-translate-y-1 hover:shadow-[var(--shadow-card)]',
                 'motion-reduce:transform-none motion-reduce:transition-none',
               )}
             >

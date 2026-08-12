@@ -27,9 +27,9 @@ export function DestinationCard({
       className={cn(
         'group relative overflow-hidden rounded-2xl bg-sand-200',
         variant === 'tall' ? 'aspect-[3/4]' : 'aspect-[4/3]',
-        'ring-1 ring-accent-600/25',
+        'ring-1 ring-accent-600',
         'transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-        'hover:-translate-y-1 hover:ring-accent-600/60 hover:shadow-[--shadow-card-hover]',
+        'hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]',
         'motion-reduce:transform-none motion-reduce:transition-none',
         className,
       )}

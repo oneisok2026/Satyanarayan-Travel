@@ -135,7 +135,7 @@ function StatCard({
     <Link
       href={href}
       className={cn(
-        'rounded-2xl bg-white p-5 ring-1 transition-shadow hover:shadow-[--shadow-card]',
+        'rounded-2xl bg-white p-5 ring-1 transition-shadow hover:shadow-[var(--shadow-card)]',
         highlight ? 'ring-accent-300' : 'ring-sand-200',
       )}
     >

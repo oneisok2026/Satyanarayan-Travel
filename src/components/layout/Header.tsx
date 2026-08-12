@@ -85,7 +85,8 @@ export function Header({
     <>
       {/* Contact bar — hidden on small screens to save height */}
       <div className="hidden bg-brand-900 text-sand-200 lg:block">
-        <div className="container-page flex h-10 items-center justify-between text-xs">
+        {/* Row height grows with the text so the bar keeps its proportions. */}
+        <div className="container-page flex h-11 items-center justify-between text-sm">
           <div className="flex items-center gap-5">
             <a
               href={CONTACT.emailHref}
@@ -111,7 +112,7 @@ export function Header({
         className={cn(
           'sticky top-0 z-40 transition-[background-color,box-shadow,backdrop-filter] duration-300',
           scrolled
-            ? 'bg-white/95 shadow-[--shadow-card] backdrop-blur-md'
+            ? 'bg-white/95 shadow-[var(--shadow-card)] backdrop-blur-md'
             : 'bg-white lg:bg-white/80 lg:backdrop-blur-sm',
         )}
       >
@@ -196,7 +197,7 @@ export function Header({
                             : 'invisible translate-y-1 opacity-0',
                         )}
                       >
-                        <ul className="overflow-hidden rounded-xl bg-white py-1.5 shadow-[--shadow-float] ring-1 ring-sand-200">
+                        <ul className="overflow-hidden rounded-xl bg-white py-1.5 shadow-[var(--shadow-float)] ring-1 ring-sand-200">
                           {item.children.map((child) => {
                             const childActive = isCurrent(child.href);
 
@@ -295,7 +296,7 @@ function MailIcon() {
       strokeWidth="1.75"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-3.5"
+      className="size-4"
       aria-hidden="true"
     >
       <rect x="2.5" y="5" width="19" height="14" rx="2" />
@@ -313,7 +314,7 @@ function PhoneIcon() {
       strokeWidth="1.75"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-3.5"
+      className="size-4"
       aria-hidden="true"
     >
       <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" />

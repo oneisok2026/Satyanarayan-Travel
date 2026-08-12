@@ -116,7 +116,7 @@ export function WhatsAppWidget() {
         inert={!open}
         className={cn(
           'w-[min(20rem,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl',
-          'bg-white shadow-[--shadow-float] ring-1 ring-sand-900/5',
+          'bg-white shadow-[var(--shadow-float)] ring-1 ring-sand-900/5',
           'transition-[opacity,transform] duration-250 ease-[cubic-bezier(0.22,1,0.36,1)]',
           'motion-reduce:transition-none',
           open
@@ -238,7 +238,7 @@ export function WhatsAppWidget() {
         aria-label={open ? 'Close WhatsApp chat' : 'Chat with us on WhatsApp'}
         className={cn(
           'pointer-events-auto grid size-13 place-items-center rounded-full text-white',
-          'shadow-[--shadow-float] transition-[background-color,transform] duration-200',
+          'shadow-[var(--shadow-float)] transition-[background-color,transform] duration-200',
           'hover:scale-105 active:scale-95 motion-reduce:transform-none',
           open ? 'bg-[#0f7a68]' : 'bg-[#25D366]',
         )}

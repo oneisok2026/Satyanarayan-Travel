@@ -171,7 +171,7 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="rounded-xl bg-white p-5 ring-1 ring-sand-200 transition-shadow hover:shadow-[--shadow-card]"
+      className="rounded-xl bg-white p-5 ring-1 ring-sand-200 transition-shadow hover:shadow-[var(--shadow-card)]"
     >
       <p className="text-sm text-sand-600">{label}</p>
       <p className="mt-1 font-display text-3xl font-semibold text-sand-900">{value}</p>

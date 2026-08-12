@@ -32,7 +32,7 @@ export function BackToToursBar({ type }: BackToToursBarProps) {
           className={cn(
             'pointer-events-auto inline-flex items-center gap-2 rounded-full',
             'bg-accent-600 py-2.5 pr-5 pl-4 text-sm font-medium text-white',
-            'shadow-[--shadow-float] transition-[background-color,transform]',
+            'shadow-[var(--shadow-float)] transition-[background-color,transform]',
             'duration-200 hover:-translate-y-0.5 hover:bg-accent-700',
             'motion-reduce:transform-none motion-reduce:transition-none',
             'focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2',

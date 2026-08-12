@@ -36,7 +36,7 @@ export default async function AdminLoginPage() {
           <Logo invert />
         </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-[--shadow-float] sm:p-8">
+        <div className="rounded-2xl bg-white p-6 shadow-[var(--shadow-float)] sm:p-8">
           <div className="mb-6 flex flex-col gap-1.5 text-center">
             <h1 className="font-display text-2xl font-semibold text-sand-900">
               Admin sign in

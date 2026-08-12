@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={toast.id}
             className={cn(
               'animate-fade-up pointer-events-auto max-w-md rounded-xl px-4 py-3',
-              'text-sm font-medium text-white shadow-[--shadow-float]',
+              'text-sm font-medium text-white shadow-[var(--shadow-float)]',
               VARIANTS[toast.variant],
             )}
           >

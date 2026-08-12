@@ -227,7 +227,7 @@ export function AdminNav({ role }: { role: UserRole }) {
         <nav
           aria-label="Admin"
           className={cn(
-            'absolute inset-y-0 left-0 w-[min(16rem,85vw)] bg-white shadow-[--shadow-float]',
+            'absolute inset-y-0 left-0 w-[min(16rem,85vw)] bg-white shadow-[var(--shadow-float)]',
             'transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
             'motion-reduce:transition-none',
             open ? 'translate-x-0' : '-translate-x-full',

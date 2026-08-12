@@ -118,7 +118,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="min-w-0 rounded-2xl bg-white p-6 shadow-[--shadow-card] ring-1 ring-sand-200 sm:p-8">
+          <div className="min-w-0 rounded-2xl bg-white p-6 shadow-[var(--shadow-card)] ring-1 ring-sand-200 sm:p-8">
             <h2 className="font-display text-xl font-semibold text-sand-900">
               Send us an enquiry
             </h2>

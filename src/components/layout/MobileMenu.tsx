@@ -89,7 +89,7 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
         aria-modal={open}
         aria-label="Site navigation"
         className={cn(
-          'absolute inset-y-0 right-0 flex w-[min(20rem,85vw)] flex-col bg-white shadow-[--shadow-float]',
+          'absolute inset-y-0 right-0 flex w-[min(20rem,85vw)] flex-col bg-white shadow-[var(--shadow-float)]',
           'transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
           'motion-reduce:transition-none',
           open ? 'translate-x-0' : 'translate-x-full',

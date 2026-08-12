@@ -38,7 +38,7 @@ export function PackageEnquiryPanel({
   return (
     <>
       <aside className="lg:sticky lg:top-28 lg:self-start">
-        <div className="rounded-2xl bg-white p-6 shadow-[--shadow-card] ring-1 ring-sand-200">
+        <div className="rounded-2xl bg-white p-6 shadow-[var(--shadow-card)] ring-1 ring-sand-200">
           <p className="text-xs tracking-wide text-sand-500 uppercase">Starting from</p>
 
           <div className="mt-1 flex items-baseline gap-2">
