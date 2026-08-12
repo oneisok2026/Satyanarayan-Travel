@@ -81,10 +81,6 @@ export function PackageEnquiryPanel({
               Ask on WhatsApp
             </ButtonLink>
 
-            <ButtonLink href={CONTACT.phoneHref} variant="outline" size="lg" fullWidth>
-              Call {CONTACT.phone}
-            </ButtonLink>
-
             {brochureUrl && (
               <a
                 href={brochureUrl}

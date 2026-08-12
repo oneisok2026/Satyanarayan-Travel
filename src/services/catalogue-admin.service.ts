@@ -155,11 +155,24 @@ export async function updateCatalogueItem(
     await assertSlugAvailable(resource, data.slug, id);
   }
 
+  // A key the schema resolved to undefined means "remove this". $set would
+  // ignore it and leave the old value in place, so those keys go to $unset.
+  const set: Record<string, unknown> = {};
+  const unset: Record<string, ''> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value === undefined) unset[key] = '';
+    else set[key] = value;
+  }
+
   const after = await modelFor(resource)
-    .findByIdAndUpdate(toObjectId(id), { $set: data }, {
-      new: true,
-      runValidators: true,
-    })
+    .findByIdAndUpdate(
+      toObjectId(id),
+      {
+        ...(Object.keys(set).length > 0 ? { $set: set } : {}),
+        ...(Object.keys(unset).length > 0 ? { $unset: unset } : {}),
+      },
+      { new: true, runValidators: true },
+    )
     .lean<Record<string, unknown>>();
 
   if (!after) throw notFound(labelFor(resource));

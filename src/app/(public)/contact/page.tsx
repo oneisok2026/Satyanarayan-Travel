@@ -26,8 +26,11 @@ export default function ContactPage() {
       />
 
       <Section>
+        {/* min-w-0 on both columns: a grid track defaults to min-width:auto and
+            would otherwise refuse to shrink below its content's min-content
+            width, pushing the page wider than the viewport on small screens. */}
         <div className="grid gap-10 lg:grid-cols-[1fr_1.3fr]">
-          <div className="flex flex-col gap-5">
+          <div className="flex min-w-0 flex-col gap-5">
             <div className="rounded-2xl bg-white p-6 ring-1 ring-sand-200">
               <h2 className="font-display text-lg font-semibold text-sand-900">
                 Speak to us directly
@@ -115,7 +118,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white p-6 shadow-[--shadow-card] ring-1 ring-sand-200 sm:p-8">
+          <div className="min-w-0 rounded-2xl bg-white p-6 shadow-[--shadow-card] ring-1 ring-sand-200 sm:p-8">
             <h2 className="font-display text-xl font-semibold text-sand-900">
               Send us an enquiry
             </h2>

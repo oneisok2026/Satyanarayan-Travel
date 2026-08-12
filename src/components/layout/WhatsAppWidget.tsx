@@ -94,7 +94,11 @@ export function WhatsAppWidget() {
         // .floating-action owns the vertical offset and the safe-area inset.
         'lg:right-6',
       )}
-      onMouseEnter={canHover ? () => { cancelClose(); setOpen(true); } : undefined}
+      // The container only keeps an already-open panel alive while the cursor
+      // travels between the button and the panel. It must not *open* anything:
+      // its box also covers the closed panel's reserved space above the
+      // button, so opening from here would trigger on empty screen.
+      onMouseEnter={canHover ? cancelClose : undefined}
       onMouseLeave={canHover ? scheduleClose : undefined}
     >
       <div
@@ -213,6 +217,16 @@ export function WhatsAppWidget() {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
+        // Hover opens only from the button itself, so the pointer never
+        // triggers the panel from the empty space it will occupy.
+        onMouseEnter={
+          canHover
+            ? () => {
+                cancelClose();
+                setOpen(true);
+              }
+            : undefined
+        }
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? 'Close WhatsApp chat' : 'Chat with us on WhatsApp'}

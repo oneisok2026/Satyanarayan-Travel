@@ -25,6 +25,17 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
   const panelRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  // Open the section that owns the current page, and collapse any stale one
+  // once navigation lands elsewhere.
+  useEffect(() => {
+    const section = MAIN_NAV.find(
+      (item) =>
+        item.children &&
+        (pathname === item.href || pathname.startsWith(`${item.href}/`)),
+    );
+    setExpanded(section?.href ?? null);
+  }, [pathname]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -50,7 +61,14 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
 
   return (
     <div
-      className={cn('fixed inset-0 z-50 lg:hidden', !open && 'pointer-events-none')}
+      // `overflow-hidden` clips the off-canvas panel: while closed it sits at
+      // translate-x-full, one panel-width past the right edge, which would
+      // otherwise extend the document scroll width and show a horizontal
+      // scrollbar on every page.
+      className={cn(
+        'fixed inset-0 z-50 overflow-hidden lg:hidden',
+        !open && 'pointer-events-none',
+      )}
       aria-hidden={!open}
       // React 19 types `inert` as boolean; it removes the closed panel from
       // the tab order and the accessibility tree without unmounting it.
@@ -103,7 +121,10 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
           <ul className="flex flex-col gap-0.5">
             {MAIN_NAV.map((item) => {
               const active =
-                item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+                item.href === '/'
+                  ? pathname === '/'
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
               const isExpanded = expanded === item.href;
 
               return (
@@ -159,16 +180,27 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
                       )}
                     >
                       <li className="min-h-0">
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            onClick={onClose}
-                            className="block rounded-lg px-3 py-2.5 text-sm text-sand-600 transition-colors hover:bg-sand-50 hover:text-brand-800"
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
+                        {item.children.map((child) => {
+                          const childActive = pathname === child.href;
+
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              onClick={onClose}
+                              aria-current={childActive ? 'page' : undefined}
+                              tabIndex={isExpanded ? undefined : -1}
+                              className={cn(
+                                'block rounded-lg px-3 py-2.5 text-sm transition-colors',
+                                childActive
+                                  ? 'bg-brand-50 font-semibold text-accent-600'
+                                  : 'text-sand-600 hover:bg-sand-50 hover:text-brand-800',
+                              )}
+                            >
+                              {child.label}
+                            </Link>
+                          );
+                        })}
                       </li>
                     </ul>
                   )}

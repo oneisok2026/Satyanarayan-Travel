@@ -272,6 +272,7 @@ export interface ServiceDTO {
   description: string;
   icon?: string;
   coverImage?: ImageDTO;
+  showcaseImage?: ImageDTO;
   features: string[];
   featured: boolean;
   status: ContentStatus;

@@ -42,7 +42,9 @@ export default async function EditSERVICEPage({
 
   // Fields the form does not expose are sent back unchanged, so saving a
   // basic edit cannot silently wipe an itinerary or gallery.
-  const keep = ['enquiryFields', 'coverImage'];
+  // coverImage and showcaseImage are edited by the form, so they must not be
+  // passed through — a stale copy would override a deletion on save.
+  const keep = ['enquiryFields'];
   const passthrough: Record<string, unknown> = {};
   for (const key of keep) {
     if (item[key] !== undefined) passthrough[key] = item[key];

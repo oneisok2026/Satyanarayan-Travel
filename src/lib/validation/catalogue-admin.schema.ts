@@ -19,6 +19,24 @@ const imageSchema = z.object({
   caption: z.string().trim().max(300).optional(),
 });
 
+/**
+ * An image the admin may remove.
+ *
+ * The form always submits every field it renders, so clearing the URL box
+ * arrives as `{ url: '', alt: '' }` rather than as an absent key. That is
+ * treated as "no image" and normalised to undefined, which lets $unset drop
+ * the stored value instead of failing URL validation.
+ */
+const removableImageSchema = z.preprocess(
+  (value) =>
+    value &&
+    typeof value === 'object' &&
+    !String((value as { url?: unknown }).url ?? '').trim()
+      ? undefined
+      : value,
+  imageSchema.optional(),
+);
+
 const seoSchema = z
   .object({
     title: z.string().trim().max(70).optional().or(z.literal('')),
@@ -146,7 +164,8 @@ export const serviceWriteSchema = z
     shortDescription: z.string().trim().min(10).max(300),
     description: z.string().trim().min(20).max(20000),
     icon: z.string().trim().max(80).optional().or(z.literal('')),
-    coverImage: imageSchema.optional(),
+    coverImage: removableImageSchema,
+    showcaseImage: removableImageSchema,
     features: z.array(z.string().trim().max(200)).max(20).default([]),
     enquiryFields: z.array(z.string().trim().max(60)).max(20).default([]),
     featured: z.boolean().default(false),

@@ -182,7 +182,9 @@ export function EnquiryForm({
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      {/* Single column until sm: three date/number inputs side by side have a
+          min-content width wider than a phone viewport. */}
+      <div className="grid gap-4 [&>*]:min-w-0 sm:grid-cols-3">
         <Input
           label="Travel date"
           name="travelDate"

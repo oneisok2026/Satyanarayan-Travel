@@ -17,6 +17,8 @@ export interface ServiceAttributes {
   description: string;
   icon?: string;
   coverImage?: ImageAttributes;
+  /** Illustrative photo shown in the page body, below the description. */
+  showcaseImage?: ImageAttributes;
   features: string[];
   /** Extra enquiry fields this service asks for, rendered dynamically. */
   enquiryFields: string[];
@@ -36,6 +38,7 @@ const serviceSchema = new Schema<ServiceAttributes>(
     description: { type: String, required: true, maxlength: 20000 },
     icon: { type: String, trim: true, maxlength: 80 },
     coverImage: { type: imageSchema },
+    showcaseImage: { type: imageSchema },
     features: { type: [String], default: [] },
     enquiryFields: { type: [String], default: [] },
     featured: { type: Boolean, default: false },

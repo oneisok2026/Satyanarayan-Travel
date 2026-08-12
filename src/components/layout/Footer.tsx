@@ -26,20 +26,19 @@ export function Footer({
             </p>
 
             <div className="mt-6 flex flex-col gap-2 text-sm">
-              {CONTACT.phones.map((phone, index) => (
+              {CONTACT.phones.map((phone) => (
                 <a
                   key={phone.number}
                   href={phone.href}
-                  className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-white"
+                  className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-accent-500"
                 >
-                  {/* Icon on the first line only; the rest align beneath it. */}
-                  {index === 0 ? <PhoneIcon /> : <span className="w-4" aria-hidden="true" />}
+                  <PhoneIcon />
                   {phone.number}
                 </a>
               ))}
               <a
                 href={CONTACT.emailHref}
-                className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-white"
+                className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-accent-500"
               >
                 <MailIcon />
                 {CONTACT.email}
@@ -65,7 +64,7 @@ export function Footer({
         </div>
 
         <div className="mt-12 border-t border-white/10 pt-6">
-          <p className="text-xs text-sand-500">
+          <p className="text-center text-xs text-sand-500">
             © {year} {clientEnv.NEXT_PUBLIC_SITE_NAME}. All rights reserved.
           </p>
         </div>
@@ -91,7 +90,7 @@ function FooterColumn({
           <li key={link.href}>
             <Link
               href={link.href}
-              className="text-sm text-sand-400 transition-colors hover:text-white"
+              className="text-sm text-sand-400 transition-colors hover:text-accent-500"
             >
               {link.label}
             </Link>

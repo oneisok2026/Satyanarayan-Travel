@@ -265,6 +265,53 @@ export const SERVICE_FIELDS: FormSection[] = [
     ],
   },
   {
+    title: 'Banner image',
+    description: 'Background of the page header. Optional — a default is used when empty.',
+    fields: [
+      {
+        name: 'coverImageUrl',
+        path: 'coverImage.url',
+        label: 'Image',
+        kind: 'image',
+        uploadFolder: 'services',
+        description: 'Upload from your device, or paste a link. Clear the field to remove it.',
+        wide: true,
+      },
+      {
+        name: 'coverImageAlt',
+        path: 'coverImage.alt',
+        label: 'Alt text',
+        kind: 'text',
+        description: 'Describes the image for screen readers and search engines.',
+        wide: true,
+      },
+    ],
+  },
+  {
+    title: 'Showcase image',
+    description:
+      'Shown in the page body, below the service description. Leave empty to hide it.',
+    fields: [
+      {
+        name: 'showcaseImageUrl',
+        path: 'showcaseImage.url',
+        label: 'Image',
+        kind: 'image',
+        uploadFolder: 'services',
+        description: 'Upload from your device, or paste a link. Clear the field to remove it.',
+        wide: true,
+      },
+      {
+        name: 'showcaseImageAlt',
+        path: 'showcaseImage.alt',
+        label: 'Alt text',
+        kind: 'text',
+        description: 'Describes the image for screen readers and search engines.',
+        wide: true,
+      },
+    ],
+  },
+  {
     title: 'Visibility',
     fields: [
       { name: 'status', label: 'Status', kind: 'select', options: statusOptions, required: true },

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { PageHero } from '@/components/layout/PageHero';
 import { Section } from '@/components/ui/Section';
@@ -123,6 +124,27 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
+
+            {service.showcaseImage && (
+              <figure className="mt-8">
+                {/* Fixed 16:9 box so a portrait upload cannot stretch the
+                    column; the image covers and crops instead. */}
+                <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-sand-100 ring-1 ring-sand-200">
+                  <Image
+                    src={service.showcaseImage.url}
+                    alt={service.showcaseImage.alt || service.name}
+                    fill
+                    sizes="(min-width:1024px) 55vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+                {service.showcaseImage.caption && (
+                  <figcaption className="mt-2.5 text-center text-xs text-sand-500">
+                    {service.showcaseImage.caption}
+                  </figcaption>
+                )}
+              </figure>
+            )}
 
             {service.features.length > 0 && (
               <div className="mt-8">

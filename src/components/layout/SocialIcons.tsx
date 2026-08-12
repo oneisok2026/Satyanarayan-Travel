@@ -43,7 +43,7 @@ export function SocialIcons({
               className={cn(
                 'grid size-7 place-items-center rounded-full',
                 'bg-white/10 text-sand-200 transition-colors',
-                'hover:bg-white/20 hover:text-white',
+                'hover:bg-white/20 hover:text-accent-500',
                 'focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none',
               )}
             >

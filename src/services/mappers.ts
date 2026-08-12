@@ -400,6 +400,7 @@ export function toServiceDTO(input: MapperInput): ServiceDTO {
     description: str(document.description),
     icon: document.icon as string | undefined,
     coverImage: document.coverImage ? image(document.coverImage) : undefined,
+    showcaseImage: document.showcaseImage ? image(document.showcaseImage) : undefined,
     features: strings(document.features),
     featured: Boolean(document.featured),
     status: document.status as ServiceDTO['status'],

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MAIN_NAV, CONTACT } from '@/constants/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -27,6 +27,9 @@ export function Header({
   const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  /** href of the nav item whose dropdown is open, or null. */
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -36,7 +39,41 @@ export function Header({
   }, []);
 
   // Close the menu whenever navigation occurs.
-  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    setMenuOpen(false);
+    setOpenMenu(null);
+  }, [pathname]);
+
+  // A dropdown left open would sit over the page after a same-route click, so
+  // it also closes on outside pointer, Escape, and focus leaving the nav.
+  useEffect(() => {
+    if (!openMenu) return;
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!navRef.current?.contains(event.target as Node)) setOpenMenu(null);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpenMenu(null);
+    };
+    const onFocusIn = (event: FocusEvent) => {
+      if (!navRef.current?.contains(event.target as Node)) setOpenMenu(null);
+    };
+
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('focusin', onFocusIn);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('focusin', onFocusIn);
+    };
+  }, [openMenu]);
+
+  /** True when `href` is the current page (exact match, not prefix). */
+  const isCurrent = useCallback(
+    (href: string) => pathname === href,
+    [pathname],
+  );
 
   const accountHref = user
     ? ADMIN_ROLES.includes(user.role)
@@ -52,14 +89,14 @@ export function Header({
           <div className="flex items-center gap-5">
             <a
               href={CONTACT.emailHref}
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-accent-500"
             >
               <MailIcon />
               {CONTACT.email}
             </a>
             <a
               href={CONTACT.phoneHref}
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-accent-500"
             >
               <PhoneIcon />
               {CONTACT.phone}
@@ -82,21 +119,36 @@ export function Header({
         <div className="container-page flex h-20 items-center justify-between gap-4 lg:h-24">
           <Logo />
 
-          <nav aria-label="Main" className="hidden lg:block">
+          <nav aria-label="Main" ref={navRef} className="hidden lg:block">
             <ul className="flex items-center gap-0.5">
               {MAIN_NAV.map((item) => {
+                // A section counts as active for its whole subtree, so
+                // /tours/domestic still lights up "Tours".
                 const active =
                   item.href === '/'
                     ? pathname === '/'
-                    : pathname.startsWith(item.href);
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
+                const open = openMenu === item.href;
 
                 return (
-                  <li key={item.href} className="group relative">
+                  <li
+                    key={item.href}
+                    className="relative"
+                    onMouseEnter={
+                      item.children ? () => setOpenMenu(item.href) : undefined
+                    }
+                    onMouseLeave={
+                      item.children ? () => setOpenMenu(null) : undefined
+                    }
+                  >
                     <Link
                       href={item.href}
-                      aria-current={active ? 'page' : undefined}
+                      aria-current={isCurrent(item.href) ? 'page' : undefined}
+                      aria-expanded={item.children ? open : undefined}
+                      onClick={() => setOpenMenu(null)}
                       className={cn(
-                        'relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                        'group relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                         active
                           ? 'text-brand-800'
                           : 'text-sand-700 hover:text-brand-800',
@@ -105,7 +157,10 @@ export function Header({
                       {item.label}
                       {item.children && (
                         <svg
-                          className="size-3.5 transition-transform duration-200 group-hover:rotate-180"
+                          className={cn(
+                            'size-3.5 transition-transform duration-200',
+                            open && 'rotate-180',
+                          )}
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -123,7 +178,9 @@ export function Header({
                           'absolute inset-x-3 -bottom-0.5 h-0.5 origin-center rounded-full bg-accent-500',
                           'transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
                           'motion-reduce:transition-none',
-                          active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
+                          active
+                            ? 'scale-x-100'
+                            : 'scale-x-0 group-hover:scale-x-100',
                         )}
                       />
                     </Link>
@@ -131,25 +188,37 @@ export function Header({
                     {item.children && (
                       <div
                         className={cn(
-                          'invisible absolute top-full left-0 z-50 min-w-52 pt-2 opacity-0',
+                          'absolute top-full left-0 z-50 min-w-52 pt-2',
                           'transition-[opacity,transform] duration-200',
-                          'translate-y-1 group-hover:visible group-hover:translate-y-0',
-                          'group-hover:opacity-100 group-focus-within:visible',
-                          'group-focus-within:translate-y-0 group-focus-within:opacity-100',
                           'motion-reduce:transition-none',
+                          open
+                            ? 'visible translate-y-0 opacity-100'
+                            : 'invisible translate-y-1 opacity-0',
                         )}
                       >
                         <ul className="overflow-hidden rounded-xl bg-white py-1.5 shadow-[--shadow-float] ring-1 ring-sand-200">
-                          {item.children.map((child) => (
-                            <li key={child.href}>
-                              <Link
-                                href={child.href}
-                                className="block px-4 py-2.5 text-sm text-sand-700 transition-colors hover:bg-brand-50 hover:text-brand-800"
-                              >
-                                {child.label}
-                              </Link>
-                            </li>
-                          ))}
+                          {item.children.map((child) => {
+                            const childActive = isCurrent(child.href);
+
+                            return (
+                              <li key={child.href}>
+                                <Link
+                                  href={child.href}
+                                  aria-current={childActive ? 'page' : undefined}
+                                  tabIndex={open ? undefined : -1}
+                                  onClick={() => setOpenMenu(null)}
+                                  className={cn(
+                                    'block px-4 py-2.5 text-sm transition-colors',
+                                    childActive
+                                      ? 'bg-brand-50 font-semibold text-accent-600'
+                                      : 'text-sand-700 hover:bg-brand-50 hover:text-brand-800',
+                                  )}
+                                >
+                                  {child.label}
+                                </Link>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     )}
