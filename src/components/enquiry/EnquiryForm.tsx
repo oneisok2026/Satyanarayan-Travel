@@ -4,7 +4,7 @@ import { useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea, Select, Checkbox, HoneypotField } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
-import { buildGmailComposeUrl } from '@/lib/utils';
+import { buildGmailComposeUrl, openComposeWindow } from '@/lib/utils';
 import { CONTACT } from '@/constants/navigation';
 import type { EnquiryType } from '@/constants';
 
@@ -186,11 +186,10 @@ export function EnquiryForm({
       formRef.current?.reset();
       onSuccess?.();
 
-      // Point the tab opened synchronously on submit at the compose window.
-      // Opening here instead would be after an await, which popup blockers
-      // treat as untrusted and reject.
-      if (composeTab && !composeTab.closed) composeTab.location.href = url;
-      else window.open(url, '_blank', 'noopener,noreferrer');
+      // Hands off to the tab opened synchronously on submit, or to the mail
+      // client directly on mobile. Opening a tab here instead would be after
+      // an await, which popup blockers treat as untrusted and reject.
+      openComposeWindow(url, composeTab);
     } catch {
       setError('Network problem. Please check your connection and try again.');
       composeTab?.close();
@@ -208,11 +207,17 @@ export function EnquiryForm({
         </p>
         {composeUrl && (
           <p className="mt-2">
-            A Gmail tab should have opened with the details ready to send.{' '}
+            {/* On mobile the hand-off is a mailto:, which opens the phone's own
+                mail app rather than a tab — so the copy and the link target
+                both follow whichever URL was actually built. */}
+            {composeUrl.startsWith('mailto:')
+              ? 'Your mail app should have opened with the details ready to send. '
+              : 'A Gmail tab should have opened with the details ready to send. '}
             <a
               href={composeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(composeUrl.startsWith('mailto:')
+                ? {}
+                : { target: '_blank', rel: 'noopener noreferrer' })}
               className="font-medium underline underline-offset-4"
             >
               Open it again

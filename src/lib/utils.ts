@@ -96,26 +96,83 @@ export function buildMailtoUrl(
 }
 
 /**
- * Gmail's web compose window, prefilled.
+ * True on phones and tablets, where the Gmail *web* compose URL does not work.
  *
- * Preferred over mailto: because a mailto: hand-off is resolved by the OS and
- * lands in whatever desktop client is registered (Outlook on most Windows
- * machines) rather than in the browser. This opens a compose tab instead, the
- * browser-side counterpart of the wa.me link.
+ * Checked via the UA rather than a media query because this is a question
+ * about the platform's mail handling, not about how wide the window is: a
+ * narrow desktop browser still wants the web compose tab.
+ */
+function isMobilePlatform(): boolean {
+  if (typeof navigator === 'undefined') return false;
+
+  // userAgentData is the modern signal; the UA string covers the rest,
+  // including iOS, which does not implement it.
+  const uaData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } })
+    .userAgentData;
+  if (typeof uaData?.mobile === 'boolean') return uaData.mobile;
+
+  return /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(
+    navigator.userAgent,
+  );
+}
+
+/**
+ * A prefilled compose window for the visitor's own mail client.
  *
- * `fs=1` forces the full compose view, and `tf=cm` selects compose mode; both
- * are required for the /mail/u/0/ path to honour the prefilled fields.
+ * Two different URLs, because the platforms disagree:
+ *
+ *  - Desktop gets Gmail's web compose (`fs=1&tf=cm`). A mailto: hand-off there
+ *    is resolved by the OS and lands in whatever client is registered (Outlook
+ *    on most Windows machines) rather than in the browser.
+ *
+ *  - Mobile gets mailto:. The /mail/u/0/ compose URL is a desktop-only view —
+ *    phone browsers either redirect it to the plain inbox, dropping every
+ *    prefilled field, or bounce into the Gmail app on a screen the parameters
+ *    do not reach. Either way the visitor lands on their own mail with no
+ *    draft, which is why enquiries reached the dashboard but no email was ever
+ *    sent. mailto: is handled natively by the phone's default mail app and
+ *    arrives with the subject and body already filled in.
  */
 export function buildGmailComposeUrl(
   address: string,
   subject?: string,
   body?: string,
 ): string {
+  if (isMobilePlatform()) return buildMailtoUrl(address, subject, body);
+
   const params = new URLSearchParams({ fs: '1', tf: 'cm', to: address.trim() });
   if (subject) params.set('su', subject);
   if (body) params.set('body', body);
 
   return `https://mail.google.com/mail/u/0/?${params.toString()}`;
+}
+
+/**
+ * Hand a composed message off to the visitor's mail client.
+ *
+ * The forms open a blank tab synchronously inside the submit gesture, because
+ * a popup blocker only trusts window.open while the click is still being
+ * handled. What to do with that tab then depends on the URL:
+ *
+ *  - An https: Gmail compose URL is a real page, so the waiting tab navigates
+ *    to it.
+ *  - A mailto: is a hand-off to another app, not a page. Navigating a blank
+ *    tab to it leaves that tab stranded and empty behind the mail client —
+ *    very visible on mobile, where it becomes an extra browser card. So the
+ *    tab is closed and the hand-off is triggered from the current document.
+ *
+ * `composeTab` may be null when the popup was blocked outright; the https
+ * fallback opens a fresh tab, which the click gesture still permits here.
+ */
+export function openComposeWindow(url: string, composeTab: Window | null): void {
+  if (url.startsWith('mailto:')) {
+    composeTab?.close();
+    window.location.href = url;
+    return;
+  }
+
+  if (composeTab && !composeTab.closed) composeTab.location.href = url;
+  else window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 /** Deterministic booking reference, e.g. STB-4F2K9A. */

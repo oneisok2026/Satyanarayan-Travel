@@ -45,6 +45,11 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
 
     const { overflow } = document.body.style;
     document.body.style.overflow = 'hidden';
+    // The floating WhatsApp and back-to-top buttons are fixed at z-30, below
+    // this panel but still painted over the page. On mobile they land on top
+    // of the panel's footer CTAs, so the open menu hides them for its
+    // duration rather than each button having to know the menu exists.
+    document.documentElement.dataset.menuOpen = 'true';
     document.addEventListener('keydown', onKeyDown);
 
     // Move focus into the panel so the next Tab lands inside it.
@@ -54,6 +59,7 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
 
     return () => {
       document.body.style.overflow = overflow;
+      delete document.documentElement.dataset.menuOpen;
       document.removeEventListener('keydown', onKeyDown);
       window.clearTimeout(timer);
     };
@@ -90,12 +96,19 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
         aria-label="Site navigation"
         className={cn(
           'absolute inset-y-0 right-0 flex w-[min(20rem,85vw)] flex-col bg-white shadow-[var(--shadow-float)]',
+          // The panel is a full-height column: the header and footer blocks
+          // stay pinned while only the nav list scrolls. Without an explicit
+          // min-height of 0 on the flex children a long nav pushes the footer
+          // CTAs past the bottom edge, where the mobile browser chrome hides
+          // them. The safe-area insets keep both ends clear of that chrome.
+          'max-h-dvh min-h-0 overflow-hidden',
+          'pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]',
           'transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
           'motion-reduce:transition-none',
           open ? 'translate-x-0' : 'translate-x-full',
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b border-sand-200 px-5">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-sand-200 px-5">
           <span className="font-display font-semibold text-brand-900">Menu</span>
           <button
             type="button"
@@ -117,7 +130,10 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
           </button>
         </div>
 
-        <nav aria-label="Mobile" className="flex-1 overflow-y-auto px-3 py-4">
+        <nav
+          aria-label="Mobile"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4"
+        >
           <ul className="flex flex-col gap-0.5">
             {MAIN_NAV.map((item) => {
               const active =
@@ -210,7 +226,7 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
           </ul>
         </nav>
 
-        <div className="border-t border-sand-200 p-4">
+        <div className="shrink-0 border-t border-sand-200 p-4">
           <Link
             href={accountHref}
             onClick={onClose}

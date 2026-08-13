@@ -171,6 +171,15 @@
     bottom: calc(var(--floating-offset, 1rem) + env(safe-area-inset-bottom));
   }
 
+  /*
+   * While the mobile navigation panel is open it owns the screen. These
+   * buttons sit below it in the stack but still paint over the page, landing
+   * on the panel's footer CTAs on narrow screens, so they step aside.
+   */
+  html[data-menu-open] .floating-action {
+    visibility: hidden;
+  }
+
   @media (min-width: 1024px) {
     .floating-action {
       /*

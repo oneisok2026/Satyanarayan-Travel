@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
-import { cn, formatPrice, buildGmailComposeUrl } from '@/lib/utils';
+import { cn, formatPrice, buildGmailComposeUrl, openComposeWindow } from '@/lib/utils';
 import { CONTACT } from '@/constants/navigation';
 
 interface BookNowButtonProps {
@@ -214,10 +214,10 @@ export function BookNowButton({
       // Refresh so an admin viewing the dashboard sees the new booking.
       router.refresh();
 
-      // Point the tab opened synchronously above at the compose window;
-      // opening here would be after an await and get blocked.
-      if (composeTab && !composeTab.closed) composeTab.location.href = url;
-      else window.open(url, '_blank', 'noopener,noreferrer');
+      // Hands off to the tab opened synchronously above, or to the mail client
+      // directly on mobile; opening a tab here would be after an await and get
+      // blocked.
+      openComposeWindow(url, composeTab);
     } catch {
       setError('Network problem. Please check your connection and try again.');
       composeTab?.close();
@@ -260,11 +260,17 @@ export function BookNowButton({
             </p>
             {composeUrl && (
               <p className="mt-2">
-                A Gmail tab should have opened with the details ready to send.{' '}
+                {/* On mobile the hand-off is a mailto:, which opens the phone's
+                    own mail app rather than a tab — so the copy and the link
+                    target follow whichever URL was actually built. */}
+                {composeUrl.startsWith('mailto:')
+                  ? 'Your mail app should have opened with the details ready to send. '
+                  : 'A Gmail tab should have opened with the details ready to send. '}
                 <a
                   href={composeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...(composeUrl.startsWith('mailto:')
+                    ? {}
+                    : { target: '_blank', rel: 'noopener noreferrer' })}
                   className="font-medium underline underline-offset-4"
                 >
                   Open it again

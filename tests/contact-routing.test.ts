@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   buildWhatsAppUrl,
   buildMailtoUrl,
@@ -87,5 +87,63 @@ describe('gmail compose routing', () => {
   it('is an https URL a browser opens directly, not an OS hand-off', () => {
     expect(buildGmailComposeUrl(EMAIL).startsWith('https://')).toBe(true);
     expect(buildGmailComposeUrl(EMAIL)).not.toContain('mailto:');
+  });
+});
+
+/**
+ * The /mail/u/0/ compose view is desktop-only: phone browsers redirect it to
+ * the plain inbox or bounce into the Gmail app, dropping every prefilled
+ * field, so the visitor lands on their own mail with nothing to send. Mobile
+ * gets a mailto: instead, which the phone's default mail app fills in.
+ */
+describe('gmail compose routing on mobile', () => {
+  const originalNavigator = globalThis.navigator;
+
+  function setNavigator(value: unknown) {
+    Object.defineProperty(globalThis, 'navigator', {
+      value,
+      configurable: true,
+      writable: true,
+    });
+  }
+
+  afterEach(() => {
+    setNavigator(originalNavigator);
+  });
+
+  it('hands off via mailto: when userAgentData reports a mobile device', () => {
+    setNavigator({ userAgent: '', userAgentData: { mobile: true } });
+    expect(buildGmailComposeUrl(EMAIL).startsWith('mailto:')).toBe(true);
+  });
+
+  it('hands off via mailto: on Android and iOS user agents', () => {
+    for (const ua of [
+      'Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36',
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 Version/17.5 Mobile/15E148 Safari/604.1',
+    ]) {
+      setNavigator({ userAgent: ua });
+      expect(buildGmailComposeUrl(EMAIL).startsWith('mailto:')).toBe(true);
+    }
+  });
+
+  it('still prefills subject and body in the mobile hand-off', () => {
+    setNavigator({ userAgent: '', userAgentData: { mobile: true } });
+
+    const body = 'Reference: ENQ-1\nName: Asha\nNote: B & B';
+    const url = buildGmailComposeUrl(EMAIL, 'Tour package enquiry — Asha', body);
+    const params = new URLSearchParams(url.slice(url.indexOf('?') + 1));
+
+    expect(url.startsWith(`mailto:${EMAIL}?`)).toBe(true);
+    expect(params.get('subject')).toBe('Tour package enquiry — Asha');
+    expect(params.get('body')).toBe(body);
+  });
+
+  it('keeps the Gmail web tab on desktop user agents', () => {
+    setNavigator({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36',
+      userAgentData: { mobile: false },
+    });
+    expect(buildGmailComposeUrl(EMAIL).startsWith('https://mail.google.com')).toBe(true);
   });
 });

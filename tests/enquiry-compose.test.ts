@@ -25,7 +25,7 @@ describe('enquiry compose hand-off', () => {
 
   it('points the tab at the draft only after the enquiry is stored', () => {
     const savedAt = source.indexOf('setReference(referenceCode)');
-    const openedAt = source.indexOf('composeTab.location.href = url');
+    const openedAt = source.indexOf('openComposeWindow(url, composeTab)');
 
     expect(savedAt).toBeGreaterThan(-1);
     expect(openedAt).toBeGreaterThan(savedAt);

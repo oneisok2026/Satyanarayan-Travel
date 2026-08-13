@@ -51,11 +51,24 @@ export const metadata: Metadata = {
   publisher: siteName,
   formatDetection: { telephone: true, address: false, email: false },
   alternates: { canonical: '/' },
+  /*
+   * Square, pre-cropped icons rather than the 1536x1024 logo. Browsers and
+   * Android's "add to home screen" squeeze a wide source into a square slot,
+   * which is what reduced the mark to an unreadable sliver; these are
+   * centre-cropped so the temple lockup survives at 16px.
+   */
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: [
+      { url: '/icon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: '/icon-32.png',
+    apple: [{ url: '/icon-180.png', sizes: '180x180', type: 'image/png' }],
   },
+  manifest: '/manifest.webmanifest',
   openGraph: {
     type: 'website',
     locale: 'en_IN',

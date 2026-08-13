@@ -160,7 +160,7 @@ describe('booking reaches the agency mailbox', () => {
 
   it('opens the draft only after the booking is stored', () => {
     const savedAt = buttonSource.indexOf('setReference(bookingReference)');
-    const openedAt = buttonSource.indexOf('composeTab.location.href = url');
+    const openedAt = buttonSource.indexOf('openComposeWindow(url, composeTab)');
     expect(savedAt).toBeGreaterThan(-1);
     expect(openedAt).toBeGreaterThan(savedAt);
   });
