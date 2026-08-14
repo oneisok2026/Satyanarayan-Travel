@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -44,6 +38,7 @@ export function NotificationBell() {
   const [error, setError] = useState<string | null>(null);
   /** Which item is being navigated to, so only that row shows a spinner. */
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const panelRef = useRef<HTMLDivElement>(null);
@@ -132,6 +127,42 @@ export function NotificationBell() {
     startTransition(() => router.push(item.href));
   }
 
+  /**
+   * Marks every unread enquiry as read.
+   *
+   * The panel stays open and the response's own feed replaces local state, so
+   * the outcome is visible — including any bookings that deliberately remain,
+   * which would look like a failed clear if the panel simply closed.
+   */
+  async function handleClearAll() {
+    setClearing(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/admin/notifications', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok || !body?.success) {
+        setError(body?.error?.message ?? 'Could not clear notifications.');
+        return;
+      }
+
+      setItems(body.data.items as AdminNotification[]);
+      setTotal(body.data.total as number);
+
+      // Any admin list already on screen shows a read/unread state that this
+      // has just changed.
+      router.refresh();
+    } catch {
+      setError('Network problem. Please try again.');
+    } finally {
+      setClearing(false);
+    }
+  }
+
   return (
     <div className="relative">
       <button
@@ -145,8 +176,8 @@ export function NotificationBell() {
         }
         className={cn(
           'relative grid size-10 place-items-center rounded-full',
-          'text-sand-600 transition-colors hover:bg-sand-100 hover:text-sand-900',
-          'focus-visible:ring-4 focus-visible:ring-brand-500/12 focus-visible:outline-none',
+          'text-sand-600 hover:bg-sand-100 hover:text-sand-900 transition-colors',
+          'focus-visible:ring-brand-500/12 focus-visible:ring-4 focus-visible:outline-none',
           open && 'bg-sand-100 text-sand-900',
         )}
       >
@@ -169,72 +200,107 @@ export function NotificationBell() {
           aria-label="Notifications"
           className={cn(
             'absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))]',
-            'overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-float)] ring-1 ring-sand-200',
+            'ring-sand-200 overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-float)] ring-1',
           )}
         >
-          <div className="flex items-center justify-between border-b border-sand-200 px-4 py-3">
-            <p className="text-sm font-semibold text-sand-900">Notifications</p>
-            {total > 0 && (
-              <span className="text-xs text-sand-500">{total} outstanding</span>
-            )}
+          <div className="border-sand-200 flex items-center justify-between gap-3 border-b px-4 py-3">
+            <p className="text-sand-900 shrink-0 text-sm font-semibold">Notifications</p>
+
+            <div className="flex min-w-0 items-center gap-3">
+              {total > 0 && (
+                <span className="text-sand-500 truncate text-xs">
+                  {total} outstanding
+                </span>
+              )}
+
+              {/* Only offered when there is something it can actually clear. */}
+              {items.some((item) => item.kind === 'enquiry') && (
+                <button
+                  type="button"
+                  onClick={() => void handleClearAll()}
+                  disabled={clearing || pending}
+                  className={cn(
+                    'shrink-0 rounded-full px-2.5 py-1 text-xs font-medium',
+                    'text-brand-700 hover:bg-brand-50 hover:text-brand-800 transition-colors',
+                    'focus-visible:ring-brand-500/30 focus-visible:ring-2 focus-visible:outline-none',
+                    'disabled:pointer-events-none disabled:opacity-55',
+                  )}
+                >
+                  {clearing ? 'Clearing…' : 'Clear all'}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="max-h-[min(24rem,60vh)] overflow-y-auto">
             {loading && !loaded ? (
-              <p className="px-4 py-6 text-center text-sm text-sand-500">Loading…</p>
+              <p className="text-sand-500 px-4 py-6 text-center text-sm">Loading…</p>
             ) : error ? (
               <div className="px-4 py-6 text-center">
-                <p className="text-sm text-sand-600">{error}</p>
+                <p className="text-sand-600 text-sm">{error}</p>
                 <button
                   type="button"
                   onClick={() => void load()}
-                  className="mt-2 text-sm font-medium text-brand-700 underline-offset-4 hover:underline"
+                  className="text-brand-700 mt-2 text-sm font-medium underline-offset-4 hover:underline"
                 >
                   Try again
                 </button>
               </div>
             ) : items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-sand-500">
+              <p className="text-sand-500 px-4 py-8 text-center text-sm">
                 Nothing needs your attention.
               </p>
             ) : (
-              <ul className="divide-y divide-sand-100">
-                {items.map((item) => {
-                  const busy = pending && openingId === item.id;
+              <>
+                {/*
+                  Explains why "Clear all" is absent while rows remain: a
+                  booking is listed because of its status, and dismissing it
+                  would mean confirming it.
+                */}
+                {!items.some((item) => item.kind === 'enquiry') && (
+                  <p className="border-sand-100 bg-sand-50 text-sand-600 border-b px-4 py-2.5 text-xs">
+                    These bookings stay here until you confirm or cancel them.
+                  </p>
+                )}
 
-                  return (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => handleOpenItem(item)}
-                        disabled={pending}
-                        className={cn(
-                          'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors',
-                          'hover:bg-sand-50 focus-visible:bg-sand-50 focus-visible:outline-none',
-                          'disabled:cursor-progress',
-                        )}
-                      >
-                        <KindDot kind={item.kind} />
+                <ul className="divide-sand-100 divide-y">
+                  {items.map((item) => {
+                    const busy = pending && openingId === item.id;
 
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-medium text-sand-900">
-                            {item.title}
-                          </span>
-                          <span className="block truncate text-xs text-sand-600">
-                            {item.detail}
-                          </span>
-                          <span className="mt-0.5 block text-[0.6875rem] text-sand-400">
-                            {relativeTime(item.createdAt)}
-                          </span>
-                        </span>
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => handleOpenItem(item)}
+                          disabled={pending}
+                          className={cn(
+                            'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors',
+                            'hover:bg-sand-50 focus-visible:bg-sand-50 focus-visible:outline-none',
+                            'disabled:cursor-progress',
+                          )}
+                        >
+                          <KindDot kind={item.kind} />
 
-                        {busy && <Spinner />}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+                          <span className="min-w-0 flex-1">
+                            <span className="text-sand-900 block text-sm font-medium">
+                              {item.title}
+                            </span>
+                            <span className="text-sand-600 block truncate text-xs">
+                              {item.detail}
+                            </span>
+                            <span className="text-sand-400 mt-0.5 block text-[0.6875rem]">
+                              {relativeTime(item.createdAt)}
+                            </span>
+                          </span>
+
+                          {busy && <Spinner />}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
             )}
           </div>
         </div>
@@ -263,7 +329,7 @@ function Spinner() {
     <span
       role="status"
       aria-label="Opening"
-      className="mt-0.5 size-4 shrink-0 animate-spin rounded-full border-2 border-sand-300 border-t-brand-700 motion-reduce:animate-none"
+      className="border-sand-300 border-t-brand-700 mt-0.5 size-4 shrink-0 animate-spin rounded-full border-2 motion-reduce:animate-none"
     />
   );
 }

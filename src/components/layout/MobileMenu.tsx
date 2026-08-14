@@ -4,13 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { MAIN_NAV, CONTACT } from '@/constants/navigation';
+import { MAIN_NAV } from '@/constants/navigation';
+import type { ContactDetailDTO } from '@/types';
 
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
   accountHref: string;
   userName?: string;
+  /** Numbers to list at the foot of the panel. */
+  phones?: ContactDetailDTO[];
 }
 
 /**
@@ -20,7 +23,13 @@ interface MobileMenuProps {
  * directions. `inert` removes it from the tab order and the accessibility
  * tree while closed, which a plain `hidden` toggle would not do smoothly.
  */
-export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuProps) {
+export function MobileMenu({
+  open,
+  onClose,
+  accountHref,
+  userName,
+  phones = [],
+}: MobileMenuProps) {
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -243,12 +252,19 @@ export function MobileMenu({ open, onClose, accountHref, userName }: MobileMenuP
             Plan My Trip
           </Link>
 
-          <a
-            href={CONTACT.phoneHref}
-            className="mt-4 block text-center text-sm text-sand-600"
-          >
-            {CONTACT.phone}
-          </a>
+          {phones.length > 0 && (
+            <div className="mt-4 flex flex-col gap-1.5">
+              {phones.map((phone) => (
+                <a
+                  key={phone.id}
+                  href={phone.href}
+                  className="block text-center text-sm text-sand-600"
+                >
+                  {phone.value}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

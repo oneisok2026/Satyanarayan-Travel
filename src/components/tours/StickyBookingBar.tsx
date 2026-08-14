@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { cn, formatPrice, buildWhatsAppUrl } from '@/lib/utils';
-import { CONTACT } from '@/constants/navigation';
+import { clientEnv } from '@/lib/env';
 
 interface StickyBookingBarProps {
   packageId: string;
   packageTitle: string;
   price: number;
+  /** Hides the figure, showing the enquiry message in its place. */
+  priceOnRequest?: boolean;
+  priceMessage?: string;
+  whatsappNumber?: string;
 }
 
 /**
@@ -16,7 +20,13 @@ interface StickyBookingBarProps {
  * Hidden on desktop, where the sidebar panel is always visible. Appears after
  * the user scrolls past the hero so it does not cover the opening content.
  */
-export function StickyBookingBar({ packageTitle, price }: StickyBookingBarProps) {
+export function StickyBookingBar({
+  packageTitle,
+  price,
+  priceOnRequest = false,
+  priceMessage,
+  whatsappNumber,
+}: StickyBookingBarProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -42,7 +52,7 @@ export function StickyBookingBar({ packageTitle, price }: StickyBookingBarProps)
   }, [visible]);
 
   const whatsappUrl = buildWhatsAppUrl(
-    CONTACT.whatsapp,
+    whatsappNumber || clientEnv.NEXT_PUBLIC_WHATSAPP_NUMBER,
     `Hello! I'm interested in the "${packageTitle}" package.`,
   );
 
@@ -59,10 +69,20 @@ export function StickyBookingBar({ packageTitle, price }: StickyBookingBarProps)
     >
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[0.6875rem] text-sand-500">Starting from</p>
-          <p className="font-display text-lg leading-tight font-semibold text-sand-900">
-            {formatPrice(price)}
-          </p>
+          {priceOnRequest ? (
+            // Truncated rather than wrapped: this bar is a fixed-height strip
+            // and a two-line message would push the buttons out of it.
+            <p className="truncate font-display text-sm leading-tight font-semibold text-sand-900">
+              {priceMessage}
+            </p>
+          ) : (
+            <>
+              <p className="text-[0.6875rem] text-sand-500">Starting from</p>
+              <p className="font-display text-lg leading-tight font-semibold text-sand-900">
+                {formatPrice(price)}
+              </p>
+            </>
+          )}
         </div>
 
         <a

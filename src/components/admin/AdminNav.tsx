@@ -56,6 +56,7 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
     links: [
       { href: '/admin/hero-slides', label: 'Hero slides' },
       { href: '/admin/social-links', label: 'Social links' },
+      { href: '/admin/contact-details', label: 'Contact details' },
       { href: '/admin/blogs', label: 'Blog' },
       { href: '/admin/gallery', label: 'Gallery' },
       { href: '/admin/pages', label: 'Pages' },

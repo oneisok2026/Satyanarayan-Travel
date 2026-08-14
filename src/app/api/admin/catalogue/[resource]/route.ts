@@ -11,6 +11,7 @@ import {
   galleryWriteSchema,
   heroSlideWriteSchema,
   socialLinkWriteSchema,
+  contactDetailWriteSchema,
 } from '@/lib/validation/catalogue-admin.schema';
 import {
   createCatalogueItem,
@@ -34,6 +35,7 @@ const WRITE_SCHEMAS = {
   gallery: galleryWriteSchema,
   'hero-slides': heroSlideWriteSchema,
   'social-links': socialLinkWriteSchema,
+  'contact-details': contactDetailWriteSchema,
 } as const;
 
 /** POST — create a catalogue entry. super_admin only. */

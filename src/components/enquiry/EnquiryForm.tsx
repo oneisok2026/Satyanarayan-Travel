@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input, Textarea, Select, Checkbox, HoneypotField } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
 import { buildGmailComposeUrl, openComposeWindow } from '@/lib/utils';
-import { CONTACT } from '@/constants/navigation';
+import { clientEnv } from '@/lib/env';
 import type { EnquiryType } from '@/constants';
 
 interface EnquiryFormProps {
@@ -15,6 +15,12 @@ interface EnquiryFormProps {
   serviceSlug?: string;
   /** Extra service-specific fields rendered above the message box. */
   extraFields?: { name: string; label: string; type?: string; options?: string[] }[];
+  /**
+   * Where the composed message is addressed. Supplied by the server from the
+   * published contact details; falls back to the deployed address so the
+   * hand-off still works when none is published.
+   */
+  recipientEmail?: string;
   onSuccess?: () => void;
   compact?: boolean;
 }
@@ -31,6 +37,9 @@ const TYPE_LABELS: Record<string, string> = {
   hotel: 'Hotel booking enquiry',
   car_rental: 'Car rental enquiry',
   eticket: 'E-ticket booking enquiry',
+  bus_rental: 'Car and bus rental enquiry',
+  railway: 'Railway ticket booking enquiry',
+  flight: 'Flight ticket booking enquiry',
 };
 
 /**
@@ -89,6 +98,7 @@ export function EnquiryForm({
   destinationId,
   serviceSlug,
   extraFields = [],
+  recipientEmail,
   onSuccess,
   compact = false,
 }: EnquiryFormProps) {
@@ -180,7 +190,11 @@ export function EnquiryForm({
         type,
       );
 
-      const url = buildGmailComposeUrl(CONTACT.email, subject, emailBody);
+      const url = buildGmailComposeUrl(
+        recipientEmail || clientEnv.NEXT_PUBLIC_CONTACT_EMAIL,
+        subject,
+        emailBody,
+      );
       setComposeUrl(url);
       setReference(referenceCode);
       formRef.current?.reset();

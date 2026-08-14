@@ -9,7 +9,7 @@ import { Alert } from '@/components/ui/Alert';
 import { useToast } from '@/components/ui/Toast';
 import { ImageUploadField } from './ImageUploadField';
 import { ItineraryField, type ItineraryDay } from './ItineraryField';
-import { slugify } from '@/lib/utils';
+import { cn, slugify } from '@/lib/utils';
 
 export type FieldKind =
   | 'text'
@@ -20,6 +20,14 @@ export type FieldKind =
   | 'url'
   /** Newline-separated values, stored as a string array. */
   | 'list'
+  /**
+   * Comma-separated values on a single line, stored as a string array.
+   *
+   * Distinct from `list`, which is a textarea for long entries one per line.
+   * Keywords are short and conventionally written comma-separated, and the SEO
+   * screen already presents them that way.
+   */
+  | 'tags'
   /** Image URL with device upload, drag-and-drop and a preview. */
   | 'image'
   /** Repeating day-by-day entries, submitted as a JSON array. */
@@ -141,6 +149,12 @@ export function CatalogueForm({
               .map((entry) => entry.trim())
               .filter((entry) => entry.length > 0);
             break;
+          case 'tags':
+            value = String(raw ?? '')
+              .split(',')
+              .map((entry) => entry.trim())
+              .filter((entry) => entry.length > 0);
+            break;
           case 'itinerary':
             // Serialised by ItineraryField into one hidden input. A malformed
             // value would fail the server's schema anyway, so an unparseable
@@ -178,8 +192,20 @@ export function CatalogueForm({
       const body = await response.json().catch(() => null);
 
       if (!response.ok || !body?.success) {
-        if (body?.error?.fields) setFieldErrors(body.error.fields);
-        setError(body?.error?.message ?? 'Could not save your changes.');
+        const fields = body?.error?.fields as Record<string, string[]> | undefined;
+        if (fields) setFieldErrors(fields);
+
+        // A validation failure whose path is empty — an unknown key, or a
+        // cross-field rule — belongs to no rendered input, so without this the
+        // admin sees only "Could not save your changes" and no highlighted
+        // field. Surfacing the reason turns a dead end into something
+        // actionable.
+        const rootIssues = fields?._root;
+        const message = body?.error?.message ?? 'Could not save your changes.';
+
+        setError(
+          rootIssues?.length ? `${message}: ${rootIssues.join('; ')}` : message,
+        );
         return;
       }
 
@@ -203,16 +229,24 @@ export function CatalogueForm({
       {sections.map((section) => (
         <section
           key={section.title}
-          className="rounded-2xl bg-white p-6 ring-1 ring-sand-200"
+          // Tighter padding on phones: at 360–412px the desktop p-6 left the
+          // inputs barely wider than their own labels.
+          className="rounded-2xl bg-white p-4 ring-1 ring-sand-200 sm:p-6"
         >
-          <h2 className="font-display text-lg font-semibold text-sand-900">
+          <h2 className="font-display text-base font-semibold text-sand-900 sm:text-lg">
             {section.title}
           </h2>
           {section.description && (
             <p className="mt-1 mb-4 text-sm text-sand-600">{section.description}</p>
           )}
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {/*
+            min-w-0 on every cell: a grid track defaults to min-width:auto and
+            would refuse to shrink below its content's intrinsic width, which is
+            how a long placeholder or an unbroken URL pushes the whole form
+            wider than the phone viewport.
+          */}
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
             {section.fields.map((field) => {
               const path = field.path ?? field.name;
               const value = readPath(initial, path);
@@ -311,7 +345,15 @@ export function CatalogueForm({
                         ? 'url'
                         : 'text'
                   }
-                  defaultValue={value == null ? '' : String(value)}
+                  defaultValue={
+                    // A stored array joins with ", " — String() on an array
+                    // would render "a,b" and lose the spacing on every reload.
+                    field.kind === 'tags' && Array.isArray(value)
+                      ? value.join(', ')
+                      : value == null
+                        ? ''
+                        : String(value)
+                  }
                   required={field.required}
                   description={field.description}
                   placeholder={field.placeholder}
@@ -341,16 +383,67 @@ export function CatalogueForm({
         </section>
       ))}
 
-      <div className="flex items-center justify-end gap-3">
+      {/*
+        Spacer holding room for the fixed bar below, so the last field can
+        still be scrolled clear of it. Only needed while the bar is fixed.
+        h-14 covers the bar's 36px controls plus its vertical padding; the
+        safe-area inset is handled by the bar itself.
+      */}
+      <div aria-hidden="true" className="h-14 sm:hidden" />
+
+      {/*
+        Fixed to the viewport on phones, in the normal flow from sm up.
+
+        `fixed` rather than `sticky`: a sticky element is clipped to its own
+        parent's box, and this bar's parent is the form — an ordinary block as
+        tall as its content. Sticking to the bottom of that box just parks the
+        bar at the end of the form, which is exactly where it already was and
+        several screens below the fold. Fixed positioning escapes the form and
+        pins to the viewport, so the actions are always in reach.
+      */}
+      <div
+        className={cn(
+          // Row-reverse on every width: Cancel is declared first so it sits
+          // left on desktop, and reversing puts Save on the right — the
+          // dominant side — while keeping both on one line on a phone.
+          'fixed inset-x-0 bottom-0 z-30 flex flex-row-reverse items-center gap-3',
+          'border-t border-sand-200 bg-white px-4 py-3',
+          'pb-[max(0.75rem,env(safe-area-inset-bottom))]',
+          // justify-start on a row-reverse track packs items at the right,
+          // preserving the original desktop alignment.
+          'sm:static sm:z-auto sm:justify-start sm:border-0 sm:bg-transparent',
+          'sm:p-0 sm:pb-0',
+        )}
+      >
+        {/*
+          Sized to its label rather than stretched: flex-1 made the button span
+          most of the row, which read as a banner instead of a control. The
+          bar is fixed at the bottom edge, so it needs no help being found.
+        */}
+        <Button
+          type="submit"
+          loading={saving}
+          size="sm"
+          className="shrink-0 sm:h-11 sm:px-6 sm:text-[0.9375rem]"
+        >
+          {saving ? 'Saving…' : id ? 'Save changes' : 'Create'}
+        </Button>
+
+        {/*
+          Explicit height rather than padding, so it lines up with the Button
+          beside it — that one sets its height from its size variant, which
+          padding alone would not match.
+        */}
         <Link
           href={backHref}
-          className="rounded-full px-5 py-2.5 text-sm font-medium text-sand-700 transition-colors hover:bg-sand-100"
+          className={cn(
+            'inline-flex h-9 shrink-0 items-center rounded-full border border-sand-300 px-4',
+            'text-sm font-medium text-sand-700 transition-colors hover:bg-sand-100',
+            'sm:h-11 sm:border-0 sm:px-5',
+          )}
         >
           Cancel
         </Link>
-        <Button type="submit" loading={saving}>
-          {saving ? 'Saving…' : id ? 'Save changes' : 'Create'}
-        </Button>
       </div>
     </form>
   );

@@ -8,9 +8,19 @@ const ICONS: Record<string, () => React.JSX.Element> = {
   hotel: HotelIcon,
   car: CarIcon,
   ticket: TicketIcon,
+  bus: BusIcon,
+  train: TrainIcon,
+  plane: PlaneIcon,
 };
 
-export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
+export function ServicesStrip({
+  services,
+  /** Shown on each card in place of a price. */
+  priceMessage,
+}: {
+  services: ServiceDTO[];
+  priceMessage?: string;
+}) {
   if (services.length === 0) return null;
 
   return (
@@ -76,24 +86,35 @@ export function ServicesStrip({ services }: { services: ServiceDTO[] }) {
                   </ul>
                 )}
 
-                <span className="mt-auto flex items-center gap-1.5 pt-5 text-sm font-medium text-accent-700">
-                  Learn more
-                  <svg
-                    className={cn(
-                      'size-4 transition-transform duration-200',
-                      'group-hover:translate-x-1 motion-reduce:transform-none',
-                    )}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </span>
+                {/* mt-auto on the wrapper so the block sits at the card's
+                    foot and every card in the row aligns, whether or not the
+                    message is present. */}
+                <div className="mt-auto pt-5">
+                  {priceMessage && (
+                    <p className="mb-3 border-t border-sand-100 pt-4 font-display text-base font-semibold text-sand-900">
+                      {priceMessage}
+                    </p>
+                  )}
+
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-accent-700">
+                    Learn more
+                    <svg
+                      className={cn(
+                        'size-4 transition-transform duration-200',
+                        'group-hover:translate-x-1 motion-reduce:transform-none',
+                      )}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </div>
               </article>
             </ScrollReveal>
           );
@@ -152,6 +173,31 @@ function TicketIcon() {
     <svg {...iconProps}>
       <path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z" />
       <path d="M13 5v2M13 11v2M13 17v2" strokeDasharray="2 3" />
+    </svg>
+  );
+}
+
+function BusIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M4 17V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v11M4 17h16M4 17v2a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-2m10 0v2a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-2M4 8h16M7 13h.01M17 13h.01" />
+    </svg>
+  );
+}
+
+function TrainIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M6 17V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z" />
+      <path d="M6 10h12M9 14h.01M15 14h.01M8 19l-2 3M16 19l2 3" />
+    </svg>
+  );
+}
+
+function PlaneIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M17.8 19.2 16 11l3.5-3.5a2.12 2.12 0 0 0-3-3L13 8 4.8 6.2a1 1 0 0 0-.9 1.7l5.6 3.3-2.6 2.6-2.6-.5a.8.8 0 0 0-.7 1.3l2.2 2.2 2.2 2.2a.8.8 0 0 0 1.3-.7l-.5-2.6 2.6-2.6 3.3 5.6a1 1 0 0 0 1.7-.9Z" />
     </svg>
   );
 }

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { buildPageMetadata } from '@/services/page-seo.service';
 import { LegalPage } from '@/components/layout/LegalPage';
-import { CONTACT } from '@/constants/navigation';
+import { getSiteContact } from '@/services/contact.service';
+import { clientEnv } from '@/lib/env';
 
 export const revalidate = 86400; // staticPage
 
@@ -9,7 +10,13 @@ export function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/privacy-policy');
 }
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  const contact = await getSiteContact();
+  const email =
+    contact.primaryEmail?.value ?? clientEnv.NEXT_PUBLIC_CONTACT_EMAIL;
+  const phone =
+    contact.primaryPhone?.value ?? clientEnv.NEXT_PUBLIC_CONTACT_PHONE;
+
   return (
     <LegalPage
       title="Privacy Policy"
@@ -82,7 +89,7 @@ export default function PrivacyPolicyPage() {
         {
           heading: 'Contact us',
           paragraphs: [
-            `For any privacy question or request, contact us at ${CONTACT.email} or call ${CONTACT.phone}.`,
+            `For any privacy question or request, contact us at ${email} or call ${phone}.`,
           ],
         },
       ]}

@@ -8,6 +8,12 @@ import { PageHeading } from '@/components/admin/PageHeading';
 import { NewItemButton } from '@/components/admin/NewItemButton';
 import { SearchFilters } from '@/components/ui/SearchFilters';
 import { CatalogueTable, type CatalogueRow } from '@/components/admin/CatalogueTable';
+import { PriceMessageCard } from '@/components/admin/PriceMessageCard';
+import { SiteSetting } from '@/models/SiteSetting';
+import {
+  PRICE_ON_REQUEST_FALLBACK,
+  PRICE_ON_REQUEST_KEY,
+} from '@/services/contact.service';
 import { formatPrice, formatDuration } from '@/lib/utils';
 import { CONTENT_STATUSES, PACKAGE_TYPES } from '@/constants';
 import { z } from 'zod';
@@ -44,15 +50,21 @@ export default async function AdminPackagesPage({
   if (query.type) filter.type = query.type;
   if (query.search) filter.title = buildSearchRegex(query.search);
 
-  const [documents, total] = await Promise.all([
+  const [documents, total, priceMessage] = await Promise.all([
     TourPackage.find(filter)
-      .select('title slug status type price duration coverImage featured updatedAt')
+      .select(
+        'title slug status type price priceOnRequest duration coverImage featured updatedAt',
+      )
       .sort({ updatedAt: -1 })
       .skip(offsetFor(query.page, query.limit))
       .limit(query.limit)
       .lean(),
     TourPackage.countDocuments(filter),
+    SiteSetting.findOne({ key: PRICE_ON_REQUEST_KEY }).select('value').lean(),
   ]);
+
+  const priceMessageValue =
+    typeof priceMessage?.value === 'string' ? priceMessage.value.trim() : '';
 
   const rows: CatalogueRow[] = documents.map((doc) => ({
     id: String(doc._id),
@@ -62,7 +74,9 @@ export default async function AdminPackagesPage({
     image: doc.coverImage
       ? { url: doc.coverImage.url, alt: doc.coverImage.alt }
       : undefined,
-    meta: `${formatPrice(doc.price)} · ${formatDuration(doc.duration.nights, doc.duration.days)}`,
+    // The stored price is shown to the admin either way; the note says when
+    // the public site is hiding it, which the figure alone would not reveal.
+    meta: `${formatPrice(doc.price)}${doc.priceOnRequest !== false ? ' (hidden)' : ''} · ${formatDuration(doc.duration.nights, doc.duration.days)}`,
     featured: doc.featured,
     updatedAt: doc.updatedAt.toISOString(),
     publicHref: doc.status === 'published' ? `/packages/${doc.slug}` : undefined,
@@ -94,6 +108,22 @@ export default async function AdminPackagesPage({
           ) : undefined
         }
       />
+
+      {/*
+        Sits with the packages it affects rather than under Settings, since the
+        wording only appears where a package hides its price. Shown on the
+        unfiltered view only, so it does not repeat on each type-filtered page,
+        and only to super admins — the API enforces the same.
+      */}
+      {admin.role === 'super_admin' && !query.type && (
+        <div className="mb-6">
+          <PriceMessageCard
+            settingKey={PRICE_ON_REQUEST_KEY}
+            initialValue={priceMessageValue}
+            fallback={PRICE_ON_REQUEST_FALLBACK}
+          />
+        </div>
+      )}
 
       <SearchFilters
         className="mb-6"

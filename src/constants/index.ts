@@ -28,6 +28,9 @@ export const ENQUIRY_TYPES = [
   'hotel',
   'car_rental',
   'eticket',
+  'bus_rental',
+  'railway',
+  'flight',
   'contact',
 ] as const;
 export type EnquiryType = (typeof ENQUIRY_TYPES)[number];
@@ -55,8 +58,9 @@ export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
 
 export const SERVICE_SLUGS = [
   'hotel-booking',
-  'car-rental',
-  'e-ticket-booking',
+  'car-bus-rental',
+  'railway-ticket-booking',
+  'flight-ticket-booking',
 ] as const;
 export type ServiceSlug = (typeof SERVICE_SLUGS)[number];
 
@@ -122,6 +126,38 @@ export const SOCIAL_PLATFORM_LABELS: Record<SocialPlatform, string> = {
   youtube: 'YouTube',
   linkedin: 'LinkedIn',
   google: 'Google',
+};
+
+/**
+ * Kinds of contact detail an admin can publish.
+ *
+ * A closed list because the kind selects how the value is rendered and which
+ * link scheme it gets (tel:, mailto:, wa.me) — it is never used to build the
+ * scheme string itself, so an admin cannot introduce e.g. a javascript: link.
+ */
+export const CONTACT_DETAIL_KINDS = ['phone', 'email', 'whatsapp'] as const;
+export type ContactDetailKind = (typeof CONTACT_DETAIL_KINDS)[number];
+
+export const CONTACT_DETAIL_KIND_LABELS: Record<ContactDetailKind, string> = {
+  phone: 'Phone number',
+  email: 'Email address',
+  whatsapp: 'WhatsApp number',
+};
+
+/**
+ * Where a contact detail is shown.
+ *
+ * `both` is the common case; the narrower values let an admin publish an
+ * overflow number in the footer without crowding the top bar, which only has
+ * room for one line.
+ */
+export const CONTACT_PLACEMENTS = ['both', 'header', 'footer'] as const;
+export type ContactPlacement = (typeof CONTACT_PLACEMENTS)[number];
+
+export const CONTACT_PLACEMENT_LABELS: Record<ContactPlacement, string> = {
+  both: 'Header and footer',
+  header: 'Header only',
+  footer: 'Footer only',
 };
 
 /** Rate limits per window, keyed by logical bucket. */

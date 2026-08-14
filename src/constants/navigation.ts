@@ -1,6 +1,3 @@
-import { clientEnv } from '@/lib/env';
-import { buildWhatsAppUrl, normalizePhone } from '@/lib/utils';
-
 export interface NavItem {
   href: string;
   label: string;
@@ -27,8 +24,9 @@ export const MAIN_NAV: NavItem[] = [
     children: [
       { href: '/services', label: 'All Services' },
       { href: '/services/hotel-booking', label: 'Hotel Booking' },
-      { href: '/services/car-rental', label: 'Car Rental' },
-      { href: '/services/e-ticket-booking', label: 'E-Ticket Booking' },
+      { href: '/services/car-bus-rental', label: 'Car/Bus Rental' },
+      { href: '/services/railway-ticket-booking', label: 'Railway Ticket Booking' },
+      { href: '/services/flight-ticket-booking', label: 'Flight Ticket Booking' },
     ],
   },
   { href: '/gallery', label: 'Gallery' },
@@ -46,8 +44,9 @@ export const FOOTER_NAV = {
   ],
   services: [
     { href: '/services/hotel-booking', label: 'Hotel Booking' },
-    { href: '/services/car-rental', label: 'Car Rental' },
-    { href: '/services/e-ticket-booking', label: 'E-Ticket Booking' },
+    { href: '/services/car-bus-rental', label: 'Car/Bus Rental' },
+    { href: '/services/railway-ticket-booking', label: 'Railway Ticket Booking' },
+    { href: '/services/flight-ticket-booking', label: 'Flight Ticket Booking' },
     { href: '/contact', label: 'Plan a Custom Trip' },
   ],
   company: [
@@ -59,28 +58,11 @@ export const FOOTER_NAV = {
   ],
 } as const;
 
-/** Every published number, primary first. */
-const ALL_PHONES = [
-  clientEnv.NEXT_PUBLIC_CONTACT_PHONE,
-  ...clientEnv.NEXT_PUBLIC_CONTACT_PHONE_ALT.split(','),
-]
-  .map((entry) => entry.trim())
-  .filter((entry) => entry.length > 0);
-
-/** Contact details, resolved once from validated public env. */
-export const CONTACT = {
-  phone: clientEnv.NEXT_PUBLIC_CONTACT_PHONE,
-  phoneHref: `tel:${normalizePhone(clientEnv.NEXT_PUBLIC_CONTACT_PHONE)}`,
-  /** All numbers with their tel: links, for surfaces that list every line. */
-  phones: ALL_PHONES.map((phone) => ({
-    number: phone,
-    href: `tel:${normalizePhone(phone)}`,
-  })),
-  email: clientEnv.NEXT_PUBLIC_CONTACT_EMAIL,
-  emailHref: `mailto:${clientEnv.NEXT_PUBLIC_CONTACT_EMAIL}`,
-  whatsapp: clientEnv.NEXT_PUBLIC_WHATSAPP_NUMBER,
-  whatsappUrl: buildWhatsAppUrl(
-    clientEnv.NEXT_PUBLIC_WHATSAPP_NUMBER,
-    "Hello! I'd like to know more about your tour packages.",
-  ),
-} as const;
+/*
+ * Contact details are no longer resolved here.
+ *
+ * They are managed by the super admin and stored in the database, so they are
+ * fetched per request by `getSiteContact()` in services/contact.service.ts and
+ * passed down as props. The NEXT_PUBLIC_CONTACT_* values survive as that
+ * service's fallback.
+ */

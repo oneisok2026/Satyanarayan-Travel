@@ -12,6 +12,7 @@ import {
   getPublishedPackageBySlug,
   getRelatedPackages,
 } from '@/services/package.service';
+import { getPriceOnRequestText, getSiteContact } from '@/services/contact.service';
 import { isAppError } from '@/lib/errors';
 import { clientEnv } from '@/lib/env';
 import { formatDuration, formatDate, stripHtml, truncate } from '@/lib/utils';
@@ -60,7 +61,14 @@ export default async function PackageDetailPage({ params }: PageProps) {
     throw error;
   }
 
-  const related = await getRelatedPackages(pkg.id, 3);
+  const [related, priceMessage, contact] = await Promise.all([
+    getRelatedPackages(pkg.id, 3),
+    getPriceOnRequestText(),
+    getSiteContact(),
+  ]);
+
+  const whatsappNumber =
+    contact.primaryWhatsapp?.value ?? contact.primaryPhone?.value;
 
   return (
     <>
@@ -317,6 +325,10 @@ export default async function PackageDetailPage({ params }: PageProps) {
             price={pkg.price}
             compareAtPrice={pkg.compareAtPrice}
             priceNote={pkg.priceNote}
+            priceOnRequest={pkg.priceOnRequest}
+            priceMessage={priceMessage}
+            whatsappNumber={whatsappNumber}
+            recipientEmail={contact.primaryEmail?.value}
             duration={formatDuration(pkg.duration.nights, pkg.duration.days)}
             brochureUrl={pkg.brochureUrl}
           />
@@ -341,6 +353,9 @@ export default async function PackageDetailPage({ params }: PageProps) {
         packageId={pkg.id}
         packageTitle={pkg.title}
         price={pkg.price}
+        priceOnRequest={pkg.priceOnRequest}
+        priceMessage={priceMessage}
+        whatsappNumber={whatsappNumber}
       />
 
       <script
@@ -352,10 +367,14 @@ export default async function PackageDetailPage({ params }: PageProps) {
             name: pkg.title,
             description: stripHtml(pkg.shortDescription),
             image: pkg.coverImage.url,
+            // A hidden price is withheld here too: publishing the figure in
+            // structured data would surface it in search results, which is
+            // exactly what hiding it is meant to prevent.
             offers: {
               '@type': 'Offer',
-              price: pkg.price,
-              priceCurrency: 'INR',
+              ...(pkg.priceOnRequest
+                ? {}
+                : { price: pkg.price, priceCurrency: 'INR' }),
               availability: 'https://schema.org/InStock',
               url: `${clientEnv.NEXT_PUBLIC_SITE_URL}/packages/${pkg.slug}`,
             },

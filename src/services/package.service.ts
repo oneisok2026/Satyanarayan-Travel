@@ -49,7 +49,7 @@ const SORTS = {
 
 /** Fields needed by a listing card. Excludes itinerary/description bodies. */
 const SUMMARY_FIELDS =
-  'title slug type destinationIds categoryId shortDescription coverImage duration price compareAtPrice priceNote featured rating';
+  'title slug type destinationIds categoryId shortDescription coverImage duration price compareAtPrice priceNote priceOnRequest featured rating';
 
 export async function listPublishedPackages(
   filters: PackageListFilters,

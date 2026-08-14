@@ -51,6 +51,16 @@ export interface TourPackageAttributes {
   compareAtPrice?: number;
   childPrice?: number;
   priceNote?: string;
+  /**
+   * Hides every price on the public site and shows the enquiry message
+   * instead. The stored figures are kept so booking and reporting still have
+   * a number to work from once the agency quotes the trip.
+   *
+   * Defaults to true: the agency quotes each trip rather than selling at a
+   * list price, so a package must not publish a figure unless someone has
+   * deliberately chosen to show it.
+   */
+  priceOnRequest: boolean;
   itinerary: ItineraryDayAttributes[];
   inclusions: string[];
   exclusions: string[];
@@ -120,6 +130,7 @@ const tourPackageSchema = new Schema<TourPackageAttributes>(
     compareAtPrice: { type: Number, min: 0 },
     childPrice: { type: Number, min: 0 },
     priceNote: { type: String, trim: true, maxlength: 200 },
+    priceOnRequest: { type: Boolean, default: true },
     itinerary: { type: [itinerarySchema], default: [] },
     inclusions: { type: [String], default: [] },
     exclusions: { type: [String], default: [] },

@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { MAIN_NAV, CONTACT } from '@/constants/navigation';
+import { MAIN_NAV } from '@/constants/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { MobileMenu } from './MobileMenu';
 import { Logo } from './Logo';
 import { SocialIcons, type SocialLinkItem } from './SocialIcons';
 import { ADMIN_ROLES } from '@/constants';
+import type { ContactDetailDTO } from '@/types';
 
 /**
  * Sticky site header.
@@ -20,8 +21,13 @@ import { ADMIN_ROLES } from '@/constants';
  */
 export function Header({
   socialLinks = [],
+  emails = [],
+  phones = [],
 }: {
   socialLinks?: SocialLinkItem[];
+  /** Addresses to show in the top bar, already filtered to this placement. */
+  emails?: ContactDetailDTO[];
+  phones?: ContactDetailDTO[];
 }) {
   const pathname = usePathname();
   const { user } = useAuth();
@@ -84,29 +90,45 @@ export function Header({
   return (
     <>
       {/* Contact bar — hidden on small screens to save height */}
-      <div className="hidden bg-brand-900 text-sand-200 lg:block">
-        {/* Row height grows with the text so the bar keeps its proportions. */}
-        <div className="container-page flex h-11 items-center justify-between text-sm">
-          <div className="flex items-center gap-5">
-            <a
-              href={CONTACT.emailHref}
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-accent-500"
-            >
-              <MailIcon />
-              {CONTACT.email}
-            </a>
-            <a
-              href={CONTACT.phoneHref}
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-accent-500"
-            >
-              <PhoneIcon />
-              {CONTACT.phone}
-            </a>
-          </div>
+      {(emails.length > 0 || phones.length > 0 || socialLinks.length > 0) && (
+        <div className="hidden bg-brand-900 text-sand-200 lg:block">
+          {/* Row height grows with the text so the bar keeps its proportions. */}
+          <div className="container-page flex h-11 items-center justify-between gap-6 text-sm">
+            {/*
+              min-w-0 and a scroll container: the agency can publish several
+              numbers here, and past a few the row would otherwise push the
+              social icons off the right edge of the bar.
+            */}
+            <div className="flex min-w-0 items-center gap-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {emails.map((email) => (
+                <a
+                  key={email.id}
+                  href={email.href}
+                  title={email.label}
+                  className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors hover:text-accent-500"
+                >
+                  <MailIcon />
+                  {email.value}
+                </a>
+              ))}
 
-          <SocialIcons links={socialLinks} />
+              {phones.map((phone) => (
+                <a
+                  key={phone.id}
+                  href={phone.href}
+                  title={phone.label}
+                  className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors hover:text-accent-500"
+                >
+                  <PhoneIcon />
+                  {phone.value}
+                </a>
+              ))}
+            </div>
+
+            <SocialIcons links={socialLinks} />
+          </div>
         </div>
-      </div>
+      )}
 
       <header
         className={cn(
@@ -282,6 +304,7 @@ export function Header({
         onClose={() => setMenuOpen(false)}
         accountHref={accountHref}
         userName={user?.name}
+        phones={phones}
       />
     </>
   );

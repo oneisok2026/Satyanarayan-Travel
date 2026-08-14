@@ -6,6 +6,7 @@ import { toPackageSummaryDTO } from '@/services/mappers';
 import { PackageCard } from '@/components/tours/PackageCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
+import { getPriceOnRequestText, getSiteContact } from '@/services/contact.service';
 
 export const metadata: Metadata = {
   title: 'My favourites',
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const SUMMARY_FIELDS =
-  'title slug type destinationIds categoryId shortDescription coverImage duration price compareAtPrice priceNote featured rating';
+  'title slug type destinationIds categoryId shortDescription coverImage duration price compareAtPrice priceNote priceOnRequest featured rating';
 
 export default async function AccountFavouritesPage() {
   const user = await requireUserPage('/account/favourites');
@@ -39,6 +40,11 @@ export default async function AccountFavouritesPage() {
     .filter((favourite) => isPopulated(favourite.packageId))
     .map((favourite) => toPackageSummaryDTO(favourite.packageId as unknown as object));
 
+  const [priceMessage, contact] = await Promise.all([
+    getPriceOnRequestText(),
+    getSiteContact(),
+  ]);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -59,7 +65,12 @@ export default async function AccountFavouritesPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
           {packages.map((pkg) => (
-            <PackageCard key={pkg.id} package={pkg} />
+            <PackageCard
+              key={pkg.id}
+              package={pkg}
+              priceMessage={priceMessage}
+              recipientEmail={contact.primaryEmail?.value}
+            />
           ))}
         </div>
       )}

@@ -48,6 +48,11 @@ export {
   type SocialLinkDocument,
 } from './SocialLink';
 export {
+  ContactDetail,
+  type ContactDetailAttributes,
+  type ContactDetailDocument,
+} from './ContactDetail';
+export {
   SiteSetting,
   type SiteSettingAttributes,
   type SiteSettingDocument,

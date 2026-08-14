@@ -5,8 +5,8 @@ import { formatPrice } from '@/lib/utils';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { EnquiryForm } from '@/components/enquiry/EnquiryForm';
-import { CONTACT } from '@/constants/navigation';
 import { buildWhatsAppUrl } from '@/lib/utils';
+import { clientEnv } from '@/lib/env';
 
 interface PackageEnquiryPanelProps {
   packageId: string;
@@ -14,6 +14,12 @@ interface PackageEnquiryPanelProps {
   price: number;
   compareAtPrice?: number;
   priceNote?: string;
+  /** Hides the figure, showing the enquiry message in its place. */
+  priceOnRequest?: boolean;
+  priceMessage?: string;
+  /** Numbers and address resolved from the published contact details. */
+  whatsappNumber?: string;
+  recipientEmail?: string;
   duration: string;
   brochureUrl?: string;
 }
@@ -25,13 +31,17 @@ export function PackageEnquiryPanel({
   price,
   compareAtPrice,
   priceNote,
+  priceOnRequest = false,
+  priceMessage,
+  whatsappNumber,
+  recipientEmail,
   duration,
   brochureUrl,
 }: PackageEnquiryPanelProps) {
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   const whatsappUrl = buildWhatsAppUrl(
-    CONTACT.whatsapp,
+    whatsappNumber || clientEnv.NEXT_PUBLIC_WHATSAPP_NUMBER,
     `Hello! I'm interested in the "${packageTitle}" package.`,
   );
 
@@ -39,20 +49,33 @@ export function PackageEnquiryPanel({
     <>
       <aside className="lg:sticky lg:top-28 lg:self-start">
         <div className="rounded-2xl bg-white p-6 shadow-[var(--shadow-card)] ring-1 ring-sand-200">
-          <p className="text-xs tracking-wide text-sand-500 uppercase">Starting from</p>
+          {priceOnRequest ? (
+            <>
+              <p className="text-xs tracking-wide text-sand-500 uppercase">Pricing</p>
+              <p className="mt-1 font-display text-xl leading-snug font-semibold text-sand-900">
+                {priceMessage}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-xs tracking-wide text-sand-500 uppercase">
+                Starting from
+              </p>
 
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-display text-3xl font-semibold text-sand-900">
-              {formatPrice(price)}
-            </span>
-            {compareAtPrice && compareAtPrice > price && (
-              <span className="text-sm text-sand-400 line-through">
-                {formatPrice(compareAtPrice)}
-              </span>
-            )}
-          </div>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="font-display text-3xl font-semibold text-sand-900">
+                  {formatPrice(price)}
+                </span>
+                {compareAtPrice && compareAtPrice > price && (
+                  <span className="text-sm text-sand-400 line-through">
+                    {formatPrice(compareAtPrice)}
+                  </span>
+                )}
+              </div>
 
-          {priceNote && <p className="mt-1 text-xs text-sand-500">{priceNote}</p>}
+              {priceNote && <p className="mt-1 text-xs text-sand-500">{priceNote}</p>}
+            </>
+          )}
 
           <dl className="mt-5 flex flex-col gap-2.5 border-y border-sand-200 py-4 text-sm">
             <div className="flex justify-between">
@@ -110,6 +133,7 @@ export function PackageEnquiryPanel({
         <EnquiryForm
           type="package"
           packageId={packageId}
+          recipientEmail={recipientEmail}
           onSuccess={() => {
             // Leave the confirmation visible briefly before closing.
             window.setTimeout(() => setEnquiryOpen(false), 3500);

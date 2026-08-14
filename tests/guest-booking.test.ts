@@ -146,7 +146,11 @@ describe('party size', () => {
  */
 describe('booking reaches the agency mailbox', () => {
   it('opens a Gmail draft addressed from config, not a literal', () => {
-    expect(buttonSource).toContain('buildGmailComposeUrl(CONTACT.email');
+    // The address is the admin-managed one, falling back to the deployed
+    // value — never a literal compiled into the component.
+    expect(buttonSource).toContain(
+      'recipientEmail || clientEnv.NEXT_PUBLIC_CONTACT_EMAIL',
+    );
     expect(buttonSource).not.toMatch(/mailto:[a-z0-9.]+@/i);
   });
 

@@ -34,6 +34,7 @@ async function main(): Promise<void> {
     SiteSetting,
     HeroSlide,
     SocialLink,
+    ContactDetail,
   } = await import('../src/models/index');
 
   await mongoose.connect(process.env.MONGODB_URI as string, {
@@ -645,28 +646,84 @@ async function main(): Promise<void> {
       featured: true,
     },
     {
-      name: 'Car Rental',
-      slug: 'car-rental',
+      name: 'Car/Bus Rental',
+      slug: 'car-bus-rental',
       shortDescription:
-        'Chauffeur-driven vehicles for airport runs, day trips and full itineraries.',
+        'Cars, tempo travellers and full-size coaches for groups of any size.',
       description:
-        'Our fleet covers hatchbacks through to tempo travellers, all with experienced drivers who know the routes. Available by the hour, the day or for a complete multi-city itinerary. Every vehicle is insured and maintained, and rates include tolls, parking and driver allowance so there are no additions at the end of the trip.',
-      icon: 'car',
-      features: ['Chauffeur-driven', 'Hatchback to tempo traveller', 'Airport and railway transfers', 'Outstation packages', 'All tolls and parking included', 'GPS-tracked vehicles'],
-      enquiryFields: ['pickupCity', 'pickupDate', 'vehicleType', 'duration'],
+        'For groups too large for a car and too small to charter a flight, we run everything from seven-seat tempo travellers to 50-seat luxury coaches. Weddings, corporate offsites, school trips and pilgrimage groups are the usual work, and we handle the parts that get overlooked: driver accommodation, permits for interstate travel, and a replacement vehicle if one breaks down mid-route.\n\nRates depend on the vehicle, the distance and the number of days, so tell us the plan and we will quote it properly rather than publish a figure that will not hold.',
+      icon: 'bus',
+      features: [
+        'Tempo travellers and 20 to 50 seat coaches',
+        'Experienced drivers, interstate permits arranged',
+        'Weddings, corporate and school groups',
+        'Pilgrimage and multi-city circuits',
+        'Tolls, parking and driver allowance included',
+        'Replacement vehicle on breakdown',
+      ],
+      enquiryFields: [
+        'pickupCity',
+        'dropCity',
+        'pickupDate',
+        'vehicleType',
+        'duration',
+        'passengers',
+      ],
       sortOrder: 2,
       featured: true,
     },
     {
-      name: 'E-Ticket Booking',
-      slug: 'e-ticket-booking',
-      shortDescription: 'Flight, rail and bus ticketing with fare comparison and support.',
+      name: 'Railway Ticket Booking',
+      slug: 'railway-ticket-booking',
+      shortDescription:
+        'Confirmed rail berths, including tatkal and group bookings on busy routes.',
       description:
-        'We book domestic and international flights, rail and bus tickets, and we handle the parts that go wrong: reschedules, cancellations, refunds and airline correspondence. If a fare drops or a better routing exists, we will tell you before ticketing rather than after.',
-      icon: 'ticket',
-      features: ['Domestic and international flights', 'Rail and bus ticketing', 'Fare comparison before booking', 'Reschedule and cancellation handling', 'Group fares', 'Web check-in assistance'],
-      enquiryFields: ['from', 'to', 'departDate', 'returnDate', 'passengers', 'travelClass'],
+        'We book across the Indian Railways network and handle the situations a booking site leaves you to solve alone: waitlisted tickets on a route you must travel, tatkal windows that close in seconds, and group bookings where a family needs berths in the same coach rather than scattered across the train.\n\nWe also handle cancellations, refunds and rescheduling, and will tell you when a different train or a different class is the better bet before we ticket rather than after.',
+      icon: 'train',
+      features: [
+        'Sleeper through to 1A and chair car',
+        'Tatkal and premium tatkal booking',
+        'Group berths kept together',
+        'Waitlist advice before ticketing',
+        'Cancellation and refund handling',
+        'Rescheduling on missed connections',
+      ],
+      enquiryFields: [
+        'from',
+        'to',
+        'departDate',
+        'returnDate',
+        'passengers',
+        'travelClass',
+      ],
       sortOrder: 3,
+      featured: true,
+    },
+    {
+      name: 'Flight Ticket Booking',
+      slug: 'flight-ticket-booking',
+      shortDescription:
+        'Domestic and international air tickets, with fare comparison before booking.',
+      description:
+        'We ticket domestic and international flights across all major carriers, and compare routings and fare classes before booking rather than presenting the first available price. Where a one-stop routing saves a material amount, or a fare is likely to drop, we will say so before issuing the ticket.\n\nAfter ticketing we stay involved: date changes, cancellations, refunds, airline correspondence, seat and meal requests, and web check-in. For international travel we also advise on baggage rules and visa transit requirements for the routing you have chosen.',
+      icon: 'plane',
+      features: [
+        'All major domestic and international carriers',
+        'Fare and routing comparison before ticketing',
+        'Date change, cancellation and refund handling',
+        'Group and corporate fares',
+        'Seat, meal and baggage requests',
+        'Web check-in assistance',
+      ],
+      enquiryFields: [
+        'from',
+        'to',
+        'departDate',
+        'returnDate',
+        'passengers',
+        'travelClass',
+      ],
+      sortOrder: 4,
       featured: true,
     },
   ];
@@ -877,6 +934,43 @@ async function main(): Promise<void> {
   }
   console.log(`  social links  ${socialLinks.length}`);
 
+  // ----------------------------------------------------- contact details --
+  // The numbers and address shown in the top bar, the footer and on the
+  // contact page. Managed from Content → Contact details; a super admin can
+  // add, edit and remove them without a redeploy.
+  const contactDetails = [
+    {
+      kind: 'phone',
+      value: '+91 89101 02904',
+      label: 'Bookings',
+      placement: 'both',
+      isPrimary: true,
+    },
+    { kind: 'phone', value: '+91 93666 92603', placement: 'both' },
+    { kind: 'phone', value: '+91 82820 30868', placement: 'both' },
+    {
+      kind: 'email',
+      value: 'satyanarayantourandtravel@gmail.com',
+      placement: 'both',
+      isPrimary: true,
+    },
+    {
+      kind: 'whatsapp',
+      value: '+91 89101 02904',
+      placement: 'footer',
+      isPrimary: true,
+    },
+  ] as const;
+
+  for (const [index, detail] of contactDetails.entries()) {
+    await ContactDetail.updateOne(
+      { kind: detail.kind, value: detail.value },
+      { $set: { ...detail, sortOrder: index, status: 'published' } },
+      { upsert: true },
+    );
+  }
+  console.log(`  contacts      ${contactDetails.length}`);
+
   // ------------------------------------------------------------- settings --
   const settings = [
     { key: 'company.name', value: 'Satyanarayan Tour & Travel PVT. LTD.', group: 'company', isPublic: true },
@@ -890,6 +984,12 @@ async function main(): Promise<void> {
     },
     { key: 'company.tagline', value: 'Journeys planned by people who have made them', group: 'company', isPublic: true },
     { key: 'company.foundedYear', value: 2009, group: 'company', isPublic: true },
+    {
+      key: 'packages.priceOnRequestText',
+      value: 'Contact us for more Information',
+      group: 'packages',
+      isPublic: true,
+    },
     { key: 'stats.travellers', value: 12000, group: 'stats', isPublic: true },
     { key: 'stats.destinations', value: 45, group: 'stats', isPublic: true },
     { key: 'stats.yearsExperience', value: 16, group: 'stats', isPublic: true },

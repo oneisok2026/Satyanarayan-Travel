@@ -44,8 +44,12 @@ export function PageHeading({
       )}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-semibold text-sand-900">{title}</h1>
+        {/* min-w-0 and break-words: an untruncated package title would
+            otherwise widen the page past a phone viewport. */}
+        <div className="min-w-0">
+          <h1 className="font-display text-xl font-semibold break-words text-sand-900 sm:text-2xl">
+            {title}
+          </h1>
           {description && <p className="mt-1 text-sm text-sand-600">{description}</p>}
         </div>
         {action}

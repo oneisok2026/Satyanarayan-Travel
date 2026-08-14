@@ -5,6 +5,7 @@ import { ServicesStrip } from '@/components/home/ServicesStrip';
 import { CtaBand } from '@/components/home/CtaBand';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { listPublishedServices } from '@/services/content.service';
+import { getPriceOnRequestText } from '@/services/contact.service';
 
 export const revalidate = 3600; // services
 
@@ -13,7 +14,10 @@ export function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ServicesPage() {
-  const services = await listPublishedServices();
+  const [services, priceMessage] = await Promise.all([
+    listPublishedServices(),
+    getPriceOnRequestText(),
+  ]);
 
   return (
     <>
@@ -36,7 +40,7 @@ export default async function ServicesPage() {
           />
         </div>
       ) : (
-        <ServicesStrip services={services} />
+        <ServicesStrip services={services} priceMessage={priceMessage} />
       )}
 
       <CtaBand />

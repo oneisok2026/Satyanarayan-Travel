@@ -19,6 +19,7 @@ import {
   listGalleryItems,
   listHeroSlides,
 } from '@/services/content.service';
+import { getPriceOnRequestText, getSiteContact } from '@/services/contact.service';
 
 export function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/');
@@ -38,6 +39,8 @@ export default async function HomePage() {
     posts,
     gallery,
     heroSlides,
+    priceMessage,
+    contact,
   ] = await Promise.all([
     getFeaturedDestinations(8),
     listPublishedPackages({ featured: true, page: 1, limit: 6 }),
@@ -47,7 +50,15 @@ export default async function HomePage() {
     listPublishedPosts({ page: 1, limit: 3 }),
     listGalleryItems(undefined, 1, 8),
     listHeroSlides(),
+    getPriceOnRequestText(),
+    getSiteContact(),
   ]);
+
+  /** Passed to every card, so a hidden price always has wording to show. */
+  const cardProps = {
+    priceMessage,
+    recipientEmail: contact.primaryEmail?.value,
+  };
 
 
   return (
@@ -102,7 +113,7 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featured.packages.map((pkg, index) => (
               <ScrollReveal key={pkg.id} delay={(index % 3) * 70}>
-                <PackageCard package={pkg} />
+                <PackageCard package={pkg} {...cardProps} />
               </ScrollReveal>
             ))}
           </div>
@@ -127,7 +138,7 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {domestic.packages.map((pkg, index) => (
               <ScrollReveal key={pkg.id} delay={(index % 3) * 70}>
-                <PackageCard package={pkg} />
+                <PackageCard package={pkg} {...cardProps} />
               </ScrollReveal>
             ))}
           </div>
@@ -152,14 +163,14 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {international.packages.map((pkg, index) => (
               <ScrollReveal key={pkg.id} delay={(index % 3) * 70}>
-                <PackageCard package={pkg} />
+                <PackageCard package={pkg} {...cardProps} />
               </ScrollReveal>
             ))}
           </div>
         </Section>
       )}
 
-      <ServicesStrip services={services} />
+      <ServicesStrip services={services} priceMessage={priceMessage} />
 
       <WhyChooseUs />
 

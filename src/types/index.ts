@@ -1,5 +1,7 @@
 import type {
   BookingStatus,
+  ContactDetailKind,
+  ContactPlacement,
   ContentStatus,
   EnquiryStatus,
   EnquiryType,
@@ -139,6 +141,8 @@ export interface TourPackageDTO {
   priceNote?: string;
   /** Struck-through original price, when the package is discounted. */
   compareAtPrice?: number;
+  /** When set, the public site shows the enquiry message instead of a price. */
+  priceOnRequest: boolean;
   itinerary: ItineraryDayDTO[];
   inclusions: string[];
   exclusions: string[];
@@ -167,6 +171,7 @@ export interface TourPackageSummaryDTO {
   price: number;
   compareAtPrice?: number;
   priceNote?: string;
+  priceOnRequest: boolean;
   featured: boolean;
   rating: { average: number; count: number };
 }
@@ -266,6 +271,33 @@ export interface ServiceDTO {
   status: ContentStatus;
   sortOrder: number;
   seo?: SeoDTO;
+}
+
+/**
+ * A published contact line, ready to render.
+ *
+ * `href` is built on the server from the kind, so the header and footer never
+ * assemble a scheme from stored text.
+ */
+export interface ContactDetailDTO {
+  id: string;
+  kind: ContactDetailKind;
+  value: string;
+  label?: string;
+  href: string;
+  placement: ContactPlacement;
+  isPrimary: boolean;
+}
+
+/** The contact lines each surface needs, resolved once per request. */
+export interface SiteContactDTO {
+  phones: ContactDetailDTO[];
+  emails: ContactDetailDTO[];
+  whatsapps: ContactDetailDTO[];
+  /** The single line used where only one fits. */
+  primaryPhone?: ContactDetailDTO;
+  primaryEmail?: ContactDetailDTO;
+  primaryWhatsapp?: ContactDetailDTO;
 }
 
 export interface FavouriteDTO {

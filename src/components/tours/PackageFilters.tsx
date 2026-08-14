@@ -10,10 +10,14 @@ interface PackageFiltersProps {
   categories: Pick<CategoryDTO, 'id' | 'name' | 'slug'>[];
 }
 
+/*
+ * Price sorts are deliberately absent: prices are not shown on the cards, so
+ * ordering by one would rearrange the grid for a reason the visitor cannot
+ * see. The server still accepts price_asc/price_desc for anyone arriving on
+ * an older link.
+ */
 const SORTS = [
   { value: 'newest', label: 'Newest first' },
-  { value: 'price_asc', label: 'Price: low to high' },
-  { value: 'price_desc', label: 'Price: high to low' },
   { value: 'duration_asc', label: 'Shortest first' },
   { value: 'rating', label: 'Highest rated' },
 ] as const;
@@ -89,21 +93,12 @@ export function PackageFilters({ destinations, categories }: PackageFiltersProps
         ))}
       </select>
 
-      <label className="sr-only" htmlFor="filter-budget">
-        Filter by budget
-      </label>
-      <select
-        id="filter-budget"
-        className={selectClass}
-        value={searchParams.get('maxPrice') ?? ''}
-        onChange={(event) => setParam('maxPrice', event.target.value)}
-      >
-        <option value="">Any budget</option>
-        <option value="20000">Under ₹20,000</option>
-        <option value="40000">Under ₹40,000</option>
-        <option value="60000">Under ₹60,000</option>
-        <option value="100000">Under ₹1,00,000</option>
-      </select>
+      {/*
+        No budget filter: packages are quoted on enquiry rather than sold at a
+        published price, so filtering by a figure the visitor cannot see on
+        any card would narrow the results for reasons they cannot follow. The
+        maxPrice query parameter still works server-side if it is ever needed.
+      */}
 
       <label className="sr-only" htmlFor="filter-duration">
         Filter by duration

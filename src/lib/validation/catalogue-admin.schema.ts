@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { CONTENT_STATUSES, PACKAGE_TYPES, SOCIAL_PLATFORMS } from '@/constants';
+import {
+  CONTACT_DETAIL_KINDS,
+  CONTACT_PLACEMENTS,
+  CONTENT_STATUSES,
+  PACKAGE_TYPES,
+  SOCIAL_PLATFORMS,
+} from '@/constants';
 import { objectIdSchema, slugSchema } from './common.schema';
 import { slugify } from '@/lib/utils';
 
@@ -60,7 +66,16 @@ const seoSchema = z
   .object({
     title: z.string().trim().max(70).optional().or(z.literal('')),
     description: z.string().trim().max(200).optional().or(z.literal('')),
-    keywords: z.array(z.string().trim().max(60)).max(20).optional(),
+    /**
+     * An emptied keywords box arrives as `[]` because the form always submits
+     * every field it renders. Normalising that to undefined keeps the stored
+     * document clean rather than accumulating empty arrays, and matches how a
+     * record that never had keywords looks.
+     */
+    keywords: z.preprocess(
+      (value) => (Array.isArray(value) && value.length === 0 ? undefined : value),
+      z.array(z.string().trim().max(60)).max(20).optional(),
+    ),
   })
   .optional();
 
@@ -92,6 +107,21 @@ const hotelSchema = z.object({
   roomType: z.string().trim().max(120).optional().or(z.literal('')),
 });
 
+/**
+ * Fixed departure dates.
+ *
+ * Not editable from the form yet, but the edit page passes the stored value
+ * back on every save so a basic edit cannot wipe it — which means the strict
+ * schema has to accept it. Omitting it here rejected every package update
+ * with a 422.
+ */
+const journeyDateSchema = z.object({
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  seatsAvailable: z.coerce.number().int().min(0).max(10_000).optional(),
+  priceOverride: z.coerce.number().min(0).max(100_000_000).optional(),
+});
+
 export const packageWriteSchema = z
   .object({
     title: z.string().trim().min(3, 'Title is too short').max(200),
@@ -111,10 +141,12 @@ export const packageWriteSchema = z
     compareAtPrice: z.coerce.number().min(0).max(100_000_000).optional(),
     childPrice: z.coerce.number().min(0).max(100_000_000).optional(),
     priceNote: z.string().trim().max(200).optional().or(z.literal('')),
+    priceOnRequest: z.boolean().default(true),
     itinerary: z.array(itineraryDaySchema).max(60).default([]),
     inclusions: z.array(z.string().trim().max(300)).max(40).default([]),
     exclusions: z.array(z.string().trim().max(300)).max(40).default([]),
     hotels: z.array(hotelSchema).max(30).default([]),
+    journeyDates: z.array(journeyDateSchema).max(60).default([]),
     transportation: z.string().trim().max(2000).optional().or(z.literal('')),
     brochureUrl: z.string().trim().url().max(1024).optional().or(z.literal('')),
     featured: z.boolean().default(false),
@@ -303,6 +335,60 @@ export const socialLinkWriteSchema = z
     status: z.enum(CONTENT_STATUSES).default('published'),
   })
   .strict();
+
+// -------------------------------------------------------- contact detail --
+
+/**
+ * A published phone number, email address or WhatsApp line.
+ *
+ * The value is validated against the kind, because each kind becomes a
+ * different link scheme: a phone that is not digits would produce a dead tel:
+ * link, and an address that is not an email would produce a mailto: that no
+ * client can open.
+ */
+export const contactDetailWriteSchema = z
+  .object({
+    kind: z.enum(CONTACT_DETAIL_KINDS),
+    value: z.string().trim().min(1, 'Enter a value').max(160),
+    label: z.string().trim().max(60).optional().or(z.literal('')),
+    placement: z.enum(CONTACT_PLACEMENTS).default('both'),
+    isPrimary: z.boolean().default(false),
+    sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
+    status: z.enum(CONTENT_STATUSES).default('published'),
+  })
+  .strict()
+  .superRefine((entry, context) => {
+    if (entry.kind === 'email') {
+      if (!z.string().email().safeParse(entry.value).success) {
+        context.addIssue({
+          code: 'custom',
+          path: ['value'],
+          message: 'Enter a valid email address',
+        });
+      }
+      return;
+    }
+
+    // Phone and WhatsApp: digits, with an optional leading +, and the usual
+    // spaces, hyphens and brackets people type. Ten digits minimum so a
+    // truncated entry cannot go live as a dialable link.
+    if (!/^\+?[\d\s()-]{8,}$/.test(entry.value)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['value'],
+        message: 'Enter a valid phone number, e.g. +91 89101 02904',
+      });
+      return;
+    }
+
+    if (entry.value.replace(/\D/g, '').length < 10) {
+      context.addIssue({
+        code: 'custom',
+        path: ['value'],
+        message: 'A phone number needs at least 10 digits',
+      });
+    }
+  });
 
 export type PackageWriteInput = z.infer<typeof packageWriteSchema>;
 export type DestinationWriteInput = z.infer<typeof destinationWriteSchema>;

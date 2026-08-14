@@ -9,6 +9,10 @@ interface PackageCardProps {
   package: TourPackageSummaryDTO;
   /** Set for above-the-fold cards so their image is not lazy-loaded. */
   priority?: boolean;
+  /** Wording shown on cards whose package hides its price. */
+  priceMessage?: string;
+  /** Where the booking dialog addresses its composed message. */
+  recipientEmail?: string;
   className?: string;
 }
 
@@ -21,10 +25,14 @@ interface PackageCardProps {
 export function PackageCard({
   package: pkg,
   priority = false,
+  priceMessage,
+  recipientEmail,
   className,
 }: PackageCardProps) {
+  // A discount badge would give away the very figures a hidden price is
+  // meant to withhold, so it is suppressed along with them.
   const discount =
-    pkg.compareAtPrice && pkg.compareAtPrice > pkg.price
+    !pkg.priceOnRequest && pkg.compareAtPrice && pkg.compareAtPrice > pkg.price
       ? Math.round(((pkg.compareAtPrice - pkg.price) / pkg.compareAtPrice) * 100)
       : 0;
 
@@ -108,17 +116,27 @@ export function PackageCard({
         )}
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-          <div>
-            {pkg.compareAtPrice && pkg.compareAtPrice > pkg.price && (
-              <p className="text-xs text-sand-400 line-through">
-                {formatPrice(pkg.compareAtPrice)}
+          {/* min-w-0 so the message wraps inside the card rather than pushing
+              the arrow past the right edge. */}
+          <div className="min-w-0">
+            {pkg.priceOnRequest ? (
+              <p className="font-display text-base leading-snug font-semibold text-sand-900">
+                {priceMessage}
               </p>
-            )}
-            <p className="font-display text-xl font-semibold text-sand-900">
-              {formatPrice(pkg.price)}
-            </p>
-            {pkg.priceNote && (
-              <p className="text-[0.6875rem] text-sand-500">{pkg.priceNote}</p>
+            ) : (
+              <>
+                {pkg.compareAtPrice && pkg.compareAtPrice > pkg.price && (
+                  <p className="text-xs text-sand-400 line-through">
+                    {formatPrice(pkg.compareAtPrice)}
+                  </p>
+                )}
+                <p className="font-display text-xl font-semibold text-sand-900">
+                  {formatPrice(pkg.price)}
+                </p>
+                {pkg.priceNote && (
+                  <p className="text-[0.6875rem] text-sand-500">{pkg.priceNote}</p>
+                )}
+              </>
             )}
           </div>
 
@@ -154,6 +172,9 @@ export function PackageCard({
             packageId={pkg.id}
             packageTitle={pkg.title}
             price={pkg.price}
+            priceOnRequest={pkg.priceOnRequest}
+            priceMessage={priceMessage}
+            recipientEmail={recipientEmail}
           />
 
           <Link

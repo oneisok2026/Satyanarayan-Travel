@@ -162,6 +162,10 @@ export function toPackageSummaryDTO(input: MapperInput): TourPackageSummaryDTO {
     price: (document.price as number) ?? 0,
     compareAtPrice: document.compareAtPrice as number | undefined,
     priceNote: document.priceNote as string | undefined,
+    // Absent on records written before the field existed. Those default to
+    // hidden, matching the schema, so a legacy package cannot publish a price
+    // the agency never chose to show.
+    priceOnRequest: document.priceOnRequest !== false,
     featured: Boolean(document.featured),
     rating: {
       average: (rating.average as number) ?? 0,

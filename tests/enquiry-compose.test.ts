@@ -40,7 +40,9 @@ describe('enquiry compose hand-off', () => {
   });
 
   it('addresses the agency mailbox from config, not a literal', () => {
-    expect(source).toContain('buildGmailComposeUrl(CONTACT.email');
+    // The address is the admin-managed one, falling back to the deployed
+    // value — never a literal compiled into the component.
+    expect(source).toContain('recipientEmail || clientEnv.NEXT_PUBLIC_CONTACT_EMAIL');
     expect(source).not.toMatch(/mailto:[a-z0-9.]+@/i);
   });
 

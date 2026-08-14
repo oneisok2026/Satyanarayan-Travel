@@ -5,9 +5,10 @@ import { PageHero } from '@/components/layout/PageHero';
 import { Section } from '@/components/ui/Section';
 import { EnquiryForm } from '@/components/enquiry/EnquiryForm';
 import { getPublishedServiceBySlug } from '@/services/content.service';
+import { getPriceOnRequestText, getSiteContact } from '@/services/contact.service';
 import { isAppError } from '@/lib/errors';
 import { clientEnv } from '@/lib/env';
-import { SERVICE_SLUGS } from '@/constants';
+import { SERVICE_SLUGS, type EnquiryType } from '@/constants';
 
 export const revalidate = 3600; // services
 
@@ -31,27 +32,65 @@ const SERVICE_FIELDS: Record<
       options: ['Budget', '3 star', '4 star', '5 star', 'Resort'],
     },
   ],
-  'car-rental': [
+  'car-bus-rental': [
     { name: 'pickupCity', label: 'Pickup city' },
+    { name: 'dropCity', label: 'Drop city' },
     { name: 'pickupDate', label: 'Pickup date', type: 'date' },
     {
       name: 'vehicleType',
       label: 'Vehicle type',
-      options: ['Hatchback', 'Sedan', 'SUV', 'Tempo Traveller', 'Mini Bus'],
+      options: [
+        'Hatchback',
+        'Sedan',
+        'SUV',
+        'Tempo Traveller',
+        'Mini Bus',
+        'Luxury Coach',
+      ],
     },
-    { name: 'duration', label: 'Duration', options: ['Half day', 'Full day', 'Multi-day', 'Airport transfer'] },
+    {
+      name: 'duration',
+      label: 'Duration',
+      options: ['Half day', 'Full day', 'Multi-day', 'Airport transfer'],
+    },
+    { name: 'passengers', label: 'Passengers', type: 'number' },
   ],
-  'e-ticket-booking': [
+  'railway-ticket-booking': [
+    { name: 'from', label: 'From station' },
+    { name: 'to', label: 'To station' },
+    { name: 'departDate', label: 'Journey date', type: 'date' },
+    { name: 'returnDate', label: 'Return date', type: 'date' },
+    { name: 'passengers', label: 'Passengers', type: 'number' },
+    {
+      name: 'travelClass',
+      label: 'Class',
+      options: ['Sleeper', '3A', '2A', '1A', 'Chair Car', 'Any'],
+    },
+  ],
+  'flight-ticket-booking': [
     { name: 'from', label: 'From' },
     { name: 'to', label: 'To' },
     { name: 'departDate', label: 'Departure date', type: 'date' },
     { name: 'returnDate', label: 'Return date', type: 'date' },
+    { name: 'passengers', label: 'Passengers', type: 'number' },
     {
       name: 'travelClass',
       label: 'Class',
-      options: ['Economy', 'Premium Economy', 'Business', 'Any'],
+      options: ['Economy', 'Premium Economy', 'Business', 'First', 'Any'],
     },
   ],
+};
+
+/**
+ * Enquiry type per service, so the dashboard can filter by what was asked for.
+ * Anything unlisted falls back to a general enquiry rather than being
+ * mislabelled as an e-ticket.
+ */
+const ENQUIRY_TYPE_BY_SLUG: Record<string, EnquiryType> = {
+  'hotel-booking': 'hotel',
+  'car-bus-rental': 'bus_rental',
+  'railway-ticket-booking': 'railway',
+  'flight-ticket-booking': 'flight',
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -92,6 +131,11 @@ export default async function ServiceDetailPage({ params }: PageProps) {
   }
 
   const extraFields = SERVICE_FIELDS[service.slug] ?? [];
+  const enquiryType = ENQUIRY_TYPE_BY_SLUG[service.slug] ?? 'general';
+  const [contact, priceMessage] = await Promise.all([
+    getSiteContact(),
+    getPriceOnRequestText(),
+  ]);
 
   return (
     <>
@@ -182,20 +226,21 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               <h2 className="font-display text-lg font-semibold text-sand-900">
                 Request {service.name.toLowerCase()}
               </h2>
-              <p className="mt-1 mb-5 text-sm text-sand-600">
+              <p className="mt-1 text-sm text-sand-600">
                 Tell us what you need and we will come back with options.
               </p>
 
+              {/* Services are quoted rather than listed at a fixed price, so
+                  this stands where a price would otherwise sit. */}
+              <p className="mt-4 mb-5 rounded-xl bg-brand-50 px-4 py-3 font-display text-base font-semibold text-brand-900">
+                {priceMessage}
+              </p>
+
               <EnquiryForm
-                type={
-                  service.slug === 'hotel-booking'
-                    ? 'hotel'
-                    : service.slug === 'car-rental'
-                      ? 'car_rental'
-                      : 'eticket'
-                }
+                type={enquiryType}
                 serviceSlug={service.slug}
                 extraFields={extraFields}
+                recipientEmail={contact.primaryEmail?.value}
                 compact
               />
             </div>

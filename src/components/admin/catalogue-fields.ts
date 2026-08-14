@@ -1,5 +1,9 @@
 import type { FormSection } from './CatalogueForm';
 import {
+  CONTACT_DETAIL_KINDS,
+  CONTACT_DETAIL_KIND_LABELS,
+  CONTACT_PLACEMENTS,
+  CONTACT_PLACEMENT_LABELS,
   CONTENT_STATUSES,
   PACKAGE_TYPES,
   SOCIAL_PLATFORMS,
@@ -41,6 +45,16 @@ const seoSection: FormSection = {
       rows: 2,
       wide: true,
     },
+    {
+      name: 'seoKeywords',
+      path: 'seo.keywords',
+      label: 'Meta keywords',
+      kind: 'tags',
+      placeholder: 'kashmir tour, dal lake houseboat, gulmarg package',
+      description:
+        'Separate with commas. Up to 20 terms. Most search engines ignore these, so treat the title and description above as the ones that matter.',
+      wide: true,
+    },
   ],
 };
 
@@ -78,20 +92,42 @@ export const PACKAGE_FIELDS: FormSection[] = [
     ],
   },
   {
-    title: 'Pricing and duration',
+    title: 'Duration',
     fields: [
+      { name: 'nights', path: 'duration.nights', label: 'Nights', kind: 'number', required: true, min: 0 },
+      { name: 'days', path: 'duration.days', label: 'Days', kind: 'number', required: true, min: 1 },
+    ],
+  },
+  {
+    title: 'Pricing',
+    description:
+      'These figures are used internally — to price a booking when one is placed, and for the revenue totals on the dashboard. They are required even when the price is hidden from visitors, which it is by default.',
+    fields: [
+      {
+        name: 'priceOnRequest',
+        label: 'Hide the price on the website',
+        kind: 'checkbox',
+        description:
+          'On by default: visitors see the enquiry message instead of a figure. Untick it only to publish this package at a fixed public price.',
+        wide: true,
+      },
       { name: 'price', label: 'Price per person (INR)', kind: 'number', required: true, min: 0 },
+      { name: 'childPrice', label: 'Child price (INR)', kind: 'number', min: 0 },
       {
         name: 'compareAtPrice',
         label: 'Compare-at price (INR)',
         kind: 'number',
         min: 0,
-        description: 'Optional. Shown struck through; must exceed the price.',
+        description:
+          'Optional, and only visible when the price is shown. Struck through; must exceed the price.',
       },
-      { name: 'childPrice', label: 'Child price (INR)', kind: 'number', min: 0 },
-      { name: 'priceNote', label: 'Price note', kind: 'text', placeholder: 'per person on twin sharing' },
-      { name: 'nights', path: 'duration.nights', label: 'Nights', kind: 'number', required: true, min: 0 },
-      { name: 'days', path: 'duration.days', label: 'Days', kind: 'number', required: true, min: 1 },
+      {
+        name: 'priceNote',
+        label: 'Price note',
+        kind: 'text',
+        placeholder: 'per person on twin sharing',
+        description: 'Only visible when the price is shown.',
+      },
     ],
   },
   {
@@ -570,6 +606,78 @@ export const SOCIAL_LINK_FIELDS: FormSection[] = [
   },
 ];
 
+export const CONTACT_DETAIL_FIELDS: FormSection[] = [
+  {
+    title: 'Contact detail',
+    description:
+      'Phone numbers and email addresses shown in the top bar, the footer and on the contact page.',
+    fields: [
+      {
+        name: 'kind',
+        label: 'Type',
+        kind: 'select',
+        required: true,
+        options: CONTACT_DETAIL_KINDS.map((kind) => ({
+          value: kind,
+          label: CONTACT_DETAIL_KIND_LABELS[kind],
+        })),
+        description: 'Decides whether this becomes a call, email or WhatsApp link.',
+      },
+      {
+        name: 'value',
+        label: 'Number or address',
+        kind: 'text',
+        required: true,
+        placeholder: '+91 89101 02904',
+        description:
+          'Type it exactly as it should appear. The dialling link is generated from it.',
+        wide: true,
+      },
+      {
+        name: 'label',
+        label: 'Caption',
+        kind: 'text',
+        placeholder: 'Sales, Bookings, Alternate line',
+        description: 'Optional small text shown above the number. ',
+        wide: true,
+      },
+      {
+        name: 'placement',
+        label: 'Show in',
+        kind: 'select',
+        required: true,
+        options: CONTACT_PLACEMENTS.map((placement) => ({
+          value: placement,
+          label: CONTACT_PLACEMENT_LABELS[placement],
+        })),
+      },
+      {
+        name: 'isPrimary',
+        label: 'Use as the main line of its type',
+        kind: 'checkbox',
+        description:
+          'The top bar and the WhatsApp button have room for one number and one address — this picks which. Without it, the lowest sort order is used.',
+        wide: true,
+      },
+      {
+        name: 'sortOrder',
+        label: 'Sort order',
+        kind: 'number',
+        min: 0,
+        description: 'Lower numbers appear first.',
+      },
+      {
+        name: 'status',
+        label: 'Status',
+        kind: 'select',
+        options: statusOptions,
+        required: true,
+        description: 'Hidden entries stay saved but disappear from the website.',
+      },
+    ],
+  },
+];
+
 export const FIELDS_BY_RESOURCE = {
   packages: PACKAGE_FIELDS,
   destinations: DESTINATION_FIELDS,
@@ -579,4 +687,5 @@ export const FIELDS_BY_RESOURCE = {
   gallery: GALLERY_FIELDS,
   'hero-slides': HERO_SLIDE_FIELDS,
   'social-links': SOCIAL_LINK_FIELDS,
+  'contact-details': CONTACT_DETAIL_FIELDS,
 } as const;

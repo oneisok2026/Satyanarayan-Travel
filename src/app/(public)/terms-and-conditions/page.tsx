@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { buildPageMetadata } from '@/services/page-seo.service';
 import { LegalPage } from '@/components/layout/LegalPage';
-import { CONTACT } from '@/constants/navigation';
+import { getSiteContact } from '@/services/contact.service';
+import { clientEnv } from '@/lib/env';
 
 export const revalidate = 86400; // staticPage
 
@@ -9,7 +10,11 @@ export function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/terms-and-conditions');
 }
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const contact = await getSiteContact();
+  const phone =
+    contact.primaryPhone?.value ?? clientEnv.NEXT_PUBLIC_CONTACT_PHONE;
+
   return (
     <LegalPage
       title="Terms and Conditions"
@@ -70,7 +75,7 @@ export default function TermsPage() {
         {
           heading: 'Complaints',
           paragraphs: [
-            `If something is wrong during your trip, tell your guide or call us immediately on ${CONTACT.phone} so we can attempt to resolve it while you are still travelling. Complaints raised only after return are considerably harder to remedy.`,
+            `If something is wrong during your trip, tell your guide or call us immediately on ${phone} so we can attempt to resolve it while you are still travelling. Complaints raised only after return are considerably harder to remedy.`,
           ],
         },
         {

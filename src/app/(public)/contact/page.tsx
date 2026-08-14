@@ -4,14 +4,26 @@ import { PageHero } from '@/components/layout/PageHero';
 import { Section } from '@/components/ui/Section';
 import { EnquiryForm } from '@/components/enquiry/EnquiryForm';
 import { ButtonLink } from '@/components/ui/Button';
-import { CONTACT } from '@/constants/navigation';
+import { getSiteContact } from '@/services/contact.service';
+import { buildWhatsAppUrl } from '@/lib/utils';
 import { clientEnv } from '@/lib/env';
 
 export function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/contact');
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const contact = await getSiteContact();
+
+  const whatsappNumber =
+    contact.primaryWhatsapp?.value ?? contact.primaryPhone?.value;
+  const whatsappUrl = whatsappNumber
+    ? buildWhatsAppUrl(
+        whatsappNumber,
+        "Hello! I'd like to know more about your tour packages.",
+      )
+    : undefined;
+
   return (
     <>
       <PageHero
@@ -40,9 +52,9 @@ export default function ContactPage() {
               </p>
 
               <div className="mt-5 flex flex-col gap-3">
-                {CONTACT.phones.map((phone, index) => (
+                {contact.phones.map((phone, index) => (
                   <a
-                    key={phone.number}
+                    key={phone.id}
                     href={phone.href}
                     className="flex items-center gap-3 rounded-xl bg-sand-50 p-3.5 transition-colors hover:bg-sand-100"
                   >
@@ -54,43 +66,50 @@ export default function ContactPage() {
                     </span>
                     <span className="min-w-0">
                       <span className="block text-xs text-sand-500">
-                        {index === 0 ? 'Call us' : 'Alternate line'}
+                        {phone.label ?? (index === 0 ? 'Call us' : 'Alternate line')}
                       </span>
                       <span className="block truncate font-medium text-sand-900">
-                        {phone.number}
+                        {phone.value}
                       </span>
                     </span>
                   </a>
                 ))}
 
-                <a
-                  href={CONTACT.emailHref}
-                  className="flex items-center gap-3 rounded-xl bg-sand-50 p-3.5 transition-colors hover:bg-sand-100"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-700 text-white"
+                {contact.emails.map((email) => (
+                  <a
+                    key={email.id}
+                    href={email.href}
+                    className="flex items-center gap-3 rounded-xl bg-sand-50 p-3.5 transition-colors hover:bg-sand-100"
                   >
-                    <MailIcon />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs text-sand-500">Email us</span>
-                    <span className="block truncate font-medium text-sand-900">
-                      {CONTACT.email}
+                    <span
+                      aria-hidden="true"
+                      className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-700 text-white"
+                    >
+                      <MailIcon />
                     </span>
-                  </span>
-                </a>
+                    <span className="min-w-0">
+                      <span className="block text-xs text-sand-500">
+                        {email.label ?? 'Email us'}
+                      </span>
+                      <span className="block truncate font-medium text-sand-900">
+                        {email.value}
+                      </span>
+                    </span>
+                  </a>
+                ))}
               </div>
 
-              <ButtonLink
-                href={CONTACT.whatsappUrl}
-                external
-                variant="whatsapp"
-                fullWidth
-                className="mt-4"
-              >
-                Chat on WhatsApp
-              </ButtonLink>
+              {whatsappUrl && (
+                <ButtonLink
+                  href={whatsappUrl}
+                  external
+                  variant="whatsapp"
+                  fullWidth
+                  className="mt-4"
+                >
+                  Chat on WhatsApp
+                </ButtonLink>
+              )}
             </div>
 
             <div className="rounded-2xl bg-brand-50 p-6 ring-1 ring-brand-100">
@@ -138,8 +157,9 @@ export default function ContactPage() {
             '@context': 'https://schema.org',
             '@type': 'TravelAgency',
             name: clientEnv.NEXT_PUBLIC_SITE_NAME,
-            telephone: CONTACT.phone,
-            email: CONTACT.email,
+            // Every published line, so the listing carries the alternates too.
+            telephone: contact.phones.map((phone) => phone.value),
+            email: contact.emails.map((email) => email.value),
             url: `${clientEnv.NEXT_PUBLIC_SITE_URL}/contact`,
             openingHours: 'Mo-Sa 10:00-19:00',
           }),

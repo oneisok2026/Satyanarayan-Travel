@@ -7,12 +7,18 @@ import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Field';
 import { Alert } from '@/components/ui/Alert';
 import { cn, formatPrice, buildGmailComposeUrl, openComposeWindow } from '@/lib/utils';
-import { CONTACT } from '@/constants/navigation';
+import { clientEnv } from '@/lib/env';
 
 interface BookNowButtonProps {
   packageId: string;
   packageTitle: string;
   price: number;
+  /** Hides the figure in the dialog, showing the enquiry message instead. */
+  priceOnRequest?: boolean;
+  /** Wording shown in place of the price. */
+  priceMessage?: string;
+  /** Where the composed booking request is addressed. */
+  recipientEmail?: string;
   className?: string;
 }
 
@@ -88,6 +94,9 @@ export function BookNowButton({
   packageId,
   packageTitle,
   price,
+  priceOnRequest = false,
+  priceMessage,
+  recipientEmail,
   className,
 }: BookNowButtonProps) {
   const router = useRouter();
@@ -207,7 +216,11 @@ export function BookNowButton({
         bookingReference,
       );
 
-      const url = buildGmailComposeUrl(CONTACT.email, subject, emailBody);
+      const url = buildGmailComposeUrl(
+        recipientEmail || clientEnv.NEXT_PUBLIC_CONTACT_EMAIL,
+        subject,
+        emailBody,
+      );
       setComposeUrl(url);
       setReference(bookingReference);
       formRef.current?.reset();
@@ -284,8 +297,18 @@ export function BookNowButton({
             {error && <Alert variant="error">{error}</Alert>}
 
             <div className="rounded-xl bg-sand-50 p-3.5 text-sm text-sand-700">
-              <span className="font-medium text-sand-900">{formatPrice(price)}</span> per
-              person on twin sharing. We confirm the final total before any payment.
+              {priceOnRequest ? (
+                <>
+                  <span className="font-medium text-sand-900">{priceMessage}</span> — send
+                  this request and we will come back with a costed itinerary.
+                </>
+              ) : (
+                <>
+                  <span className="font-medium text-sand-900">{formatPrice(price)}</span>{' '}
+                  per person on twin sharing. We confirm the final total before any
+                  payment.
+                </>
+              )}
             </div>
 
             <div className="grid gap-4 [&>*]:min-w-0 sm:grid-cols-2">

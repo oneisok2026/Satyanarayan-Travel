@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { cn, buildWhatsAppUrl } from '@/lib/utils';
-import { CONTACT } from '@/constants/navigation';
 import { clientEnv } from '@/lib/env';
 
 const GREETING = 'Hi, how can I help you?';
@@ -21,7 +20,7 @@ const CLOSE_DELAY_MS = 250;
  * The panel composes a message and hands off to WhatsApp — nothing is sent
  * from here, so no message ever reaches our servers.
  */
-export function WhatsAppWidget() {
+export function WhatsAppWidget({ number }: { number?: string }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [canHover, setCanHover] = useState(false);
@@ -76,8 +75,10 @@ export function WhatsAppWidget() {
 
   function handleSend() {
     const text = message.trim();
+    // Falls back to the deployed number when the admin has published no
+    // WhatsApp line, so the button is never a dead end.
     const url = buildWhatsAppUrl(
-      CONTACT.whatsapp,
+      number || clientEnv.NEXT_PUBLIC_WHATSAPP_NUMBER,
       text ||
         `Hello ${clientEnv.NEXT_PUBLIC_SITE_NAME}! I'd like to know more about your tour packages.`,
     );

@@ -22,7 +22,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         <div className="flex flex-1">
           <AdminNav role={user.role} />
-          <main id="main-content" className="min-w-0 flex-1 p-5 lg:p-8">
+          {/* Tighter gutters on phones so form fields keep their width. */}
+          <main id="main-content" className="min-w-0 flex-1 p-4 sm:p-5 lg:p-8">
             {children}
           </main>
         </div>

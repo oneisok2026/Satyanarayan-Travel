@@ -88,3 +88,34 @@ export async function getAdminNotifications(limit = 12): Promise<NotificationFee
     total: enquiryCount + bookingCount,
   };
 }
+
+/**
+ * Marks every unread enquiry as read, clearing it from the bell.
+ *
+ * Only enquiries. A booking appears in this feed because its status is
+ * `requested` or `pending_confirmation`, so the only way to "clear" one would
+ * be to change that status — which means telling a customer their booking is
+ * confirmed. Dismissing a notification must never do that, so bookings stay
+ * until an admin actually acts on them, and the returned count says how many
+ * were deliberately left.
+ *
+ * Idempotent: the filter pins unread, so a second call is a no-op rather than
+ * rewriting timestamps that already record when each was first seen.
+ */
+export async function markAllNotificationsRead(): Promise<{
+  cleared: number;
+  remaining: number;
+}> {
+  await connectToDatabase();
+
+  const result = await Enquiry.updateMany(
+    { readAt: { $exists: false } },
+    { $set: { readAt: new Date() } },
+  );
+
+  const remaining = await Booking.countDocuments({
+    status: { $in: ['requested', 'pending_confirmation'] },
+  });
+
+  return { cleared: result.modifiedCount, remaining };
+}

@@ -1,14 +1,20 @@
 import Link from 'next/link';
 import { clientEnv } from '@/lib/env';
-import { FOOTER_NAV, CONTACT } from '@/constants/navigation';
+import { FOOTER_NAV } from '@/constants/navigation';
 import { Logo } from './Logo';
 import { SocialIcons, type SocialLinkItem } from './SocialIcons';
+import type { ContactDetailDTO } from '@/types';
 
 /** Server Component — static content, no client JS shipped. */
 export function Footer({
   socialLinks = [],
+  phones = [],
+  emails = [],
 }: {
   socialLinks?: SocialLinkItem[];
+  /** Contact lines for this surface, already filtered to the footer. */
+  phones?: ContactDetailDTO[];
+  emails?: ContactDetailDTO[];
 }) {
   const year = new Date().getFullYear();
 
@@ -25,25 +31,34 @@ export function Footer({
               routing and a team that answers the phone when you are travelling.
             </p>
 
-            <div className="mt-6 flex flex-col gap-2 text-sm">
-              {CONTACT.phones.map((phone) => (
-                <a
-                  key={phone.number}
-                  href={phone.href}
-                  className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-accent-500"
-                >
-                  <PhoneIcon />
-                  {phone.number}
-                </a>
-              ))}
-              <a
-                href={CONTACT.emailHref}
-                className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-accent-500"
-              >
-                <MailIcon />
-                {CONTACT.email}
-              </a>
-            </div>
+            {(phones.length > 0 || emails.length > 0) && (
+              <div className="mt-6 flex flex-col gap-2 text-sm">
+                {phones.map((phone) => (
+                  <a
+                    key={phone.id}
+                    href={phone.href}
+                    className="inline-flex w-fit items-center gap-2 text-sand-300 transition-colors hover:text-accent-500"
+                  >
+                    <PhoneIcon />
+                    {phone.value}
+                    {phone.label && (
+                      <span className="text-xs text-sand-500">({phone.label})</span>
+                    )}
+                  </a>
+                ))}
+
+                {emails.map((email) => (
+                  <a
+                    key={email.id}
+                    href={email.href}
+                    className="inline-flex w-fit items-center gap-2 break-all text-sand-300 transition-colors hover:text-accent-500"
+                  >
+                    <MailIcon />
+                    {email.value}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           <FooterColumn title="Explore" links={FOOTER_NAV.explore} />

@@ -26,6 +26,9 @@ const TYPE_LABELS: Record<string, string> = {
   hotel: 'Hotel',
   car_rental: 'Car rental',
   eticket: 'E-ticket',
+  bus_rental: 'Car/Bus rental',
+  railway: 'Railway ticket',
+  flight: 'Flight ticket',
   contact: 'Contact',
 };
 

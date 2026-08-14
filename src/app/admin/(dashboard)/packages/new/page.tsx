@@ -27,7 +27,14 @@ export default async function NewPackagePage({
       noun="package"
       backHref={preset ? `/admin/packages?type=${preset}` : '/admin/packages'}
       backLabel={preset ? `All ${preset} tours` : 'All packages'}
-      initial={{ status: 'draft', type: preset ?? 'domestic', featured: false }}
+      // priceOnRequest starts ticked, matching the schema default: a new
+      // package must not publish a figure unless someone unticks it.
+      initial={{
+        status: 'draft',
+        type: preset ?? 'domestic',
+        featured: false,
+        priceOnRequest: true,
+      }}
     />
   );
 }

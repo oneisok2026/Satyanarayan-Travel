@@ -25,7 +25,7 @@ export const GET = route('GET /api/favourites', async () => {
     .populate({
       path: 'packageId',
       select:
-        'title slug type destinationIds categoryId shortDescription coverImage duration price compareAtPrice priceNote featured rating',
+        'title slug type destinationIds categoryId shortDescription coverImage duration price compareAtPrice priceNote priceOnRequest featured rating',
       populate: [
         { path: 'destinationIds', select: 'name slug' },
         { path: 'categoryId', select: 'name slug' },
